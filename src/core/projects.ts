@@ -66,3 +66,24 @@ export const deleteProject = (name: string): void => {
   saveProjects(config);
 };
 
+export const updateProject = (name: string, project: Partial<Project> & { name?: never }): void => {
+  const config = loadProjects();
+  const index = config.projects.findIndex((p) => p.name === name);
+  if (index === -1) {
+    throw new Error(`工程不存在：${name}`);
+  }
+  const existingProject = config.projects[index];
+  
+  // 如果更新了路径，需要验证 gradlew 是否存在
+  if (project.path && project.path !== existingProject.path) {
+    const gradlePath = path.join(project.path, "gradlew");
+    if (!fs.existsSync(gradlePath)) {
+      throw new Error("未找到 gradlew，请确认工程路径正确");
+    }
+  }
+  
+  // 合并更新
+  config.projects[index] = { ...existingProject, ...project };
+  saveProjects(config);
+};
+

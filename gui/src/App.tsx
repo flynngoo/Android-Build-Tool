@@ -117,6 +117,7 @@ function App() {
   const [buildLogCollapsed, setBuildLogCollapsed] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [publishPlatformModalOpen, setPublishPlatformModalOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<PublishPlatformConfig | null>(null);
   const [addingPlatform, setAddingPlatform] = useState(false);
@@ -209,12 +210,45 @@ function App() {
       messageApi.success("工程已添加");
       addForm.resetFields();
       setAddModalOpen(false);
+      setEditingProject(null);
       loadProjects();
     } catch (e) {
       messageApi.error((e as Error).message);
     } finally {
       setAdding(false);
     }
+  };
+
+  const handleUpdateProject = async (values: Project) => {
+    if (!editingProject) return;
+    setAdding(true);
+    try {
+      // 确保工程名不会被修改，使用原有的工程名
+      const updateData = { ...values, name: editingProject.name };
+      await invoke("update_project", { name: editingProject.name, project: updateData });
+      messageApi.success("工程已更新");
+      addForm.resetFields();
+      setAddModalOpen(false);
+      setEditingProject(null);
+      loadProjects();
+    } catch (e) {
+      messageApi.error((e as Error).message);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    // 填充表单数据
+    addForm.setFieldsValue({
+      name: project.name,
+      path: project.path,
+      modules: project.modules || [],
+      variants: project.variants || [],
+      buildType: project.buildType || "Debug",
+    });
+    setAddModalOpen(true);
   };
 
   const handleDeleteProject = async (name: string) => {
@@ -473,6 +507,15 @@ function App() {
             <List.Item
               actions={[
                 <Button
+                  key="edit"
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={() => handleEditProject(item)}
+                  size="small"
+                >
+                  编辑
+                </Button>,
+                <Button
                   key="delete"
                   type="text"
                   danger
@@ -481,7 +524,7 @@ function App() {
                   size="small"
                 >
                   删除
-                </Button>
+                </Button>,
               ]}
             >
               <Space direction="vertical" style={{ width: '100%' }}>
@@ -508,21 +551,30 @@ function App() {
         />
       </Card>
       <Modal
-        title="添加新工程"
+        title={editingProject ? "编辑工程" : "添加新工程"}
         open={addModalOpen}
         onCancel={() => {
           setAddModalOpen(false);
           addForm.resetFields();
+          setEditingProject(null);
         }}
         footer={null}
         destroyOnClose
         centered
       >
-        <Form layout="vertical" form={addForm} onFinish={handleAddProject}>
+        <Form layout="vertical" form={addForm} onFinish={editingProject ? handleUpdateProject : handleAddProject}>
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item name="name" label="工程名" rules={[{ required: true, message: "请输入工程名" }]}>
-                <Input prefix={<FolderOutlined />} placeholder="如 demo-app" />
+              <Form.Item 
+                name="name" 
+                label="工程名" 
+                rules={[{ required: true, message: "请输入工程名" }]}
+              >
+                <Input 
+                  prefix={<FolderOutlined />} 
+                  placeholder="如 demo-app" 
+                  disabled={!!editingProject}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -604,12 +656,12 @@ function App() {
             <Button
               type="primary"
               htmlType="submit"
-              icon={<PlusOutlined />}
+              icon={editingProject ? <EditOutlined /> : <PlusOutlined />}
               size="large"
               block
               loading={adding}
             >
-              {adding ? "添加中..." : "添加工程"}
+              {adding ? (editingProject ? "更新中..." : "添加中...") : (editingProject ? "更新工程" : "添加工程")}
             </Button>
           </Form.Item>
         </Form>

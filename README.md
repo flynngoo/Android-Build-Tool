@@ -76,6 +76,8 @@ Android 打包工具（macOS）
 ### 工程管理
 - `pnpm dev -- projects list`：列出已登记工程（默认配置文件 `config/projects.json`）
 - `pnpm dev -- projects add --name demo --path /abs/path --module app --variant debug`：登记工程（需有 `gradlew`）
+- `pnpm dev -- projects edit --name demo --path /new/path --module app --variant debug`：编辑已登记的工程（可更新路径、模块、变体等配置）
+- `pnpm dev -- projects delete --name demo`：删除已登记的工程
 
 ### 构建打包
 - `pnpm dev -- build --project demo --module app --variant debug`：调用该工程的 `./gradlew :app:assembleDebug`
@@ -147,7 +149,7 @@ GUI（Tauri）使用
       # 建议：分别构建 aarch64 和 x86_64 版本，然后分别分发
       # 用户根据自己 Mac 的芯片类型选择对应的版本使用
       ```
-- **功能**：环境检测、工程列表/添加（写入 `config/projects.json`）、选择工程/模块/variant 进行构建并展示日志、自动发布到蒲公英/fir.im。
+- **功能**：环境检测、工程列表/添加/编辑/删除（写入 `config/projects.json`）、选择工程/模块/variant 进行构建并展示日志、自动发布到蒲公英/fir.im。
 
 目录结构（当前/拟定）
 ------------------

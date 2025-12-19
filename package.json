@@ -1,6 +1,6 @@
 {
   "name": "android-build-tool",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Android 打包工具 CLI（Node.js + TypeScript，macOS 优先）",
   "license": "MIT",
   "type": "commonjs",

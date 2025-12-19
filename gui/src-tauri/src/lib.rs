@@ -148,6 +148,32 @@ fn add_project(app_handle: tauri::AppHandle, project: Project) -> Result<(), Str
 }
 
 #[tauri::command]
+fn update_project(app_handle: tauri::AppHandle, name: String, project: Project) -> Result<(), String> {
+  let path = ensure_config(&app_handle);
+  let mut cfg = list_projects(app_handle.clone())?;
+  let index = cfg.projects.iter().position(|p| p.name == name);
+  match index {
+    Some(idx) => {
+      let existing_project = &cfg.projects[idx];
+      
+      // 如果更新了路径，需要验证 gradlew 是否存在
+      if project.path != existing_project.path {
+        let gradle_name = if cfg!(windows) { "gradlew.bat" } else { "gradlew" };
+        let gradle_path = Path::new(&project.path).join(gradle_name);
+        if !gradle_path.exists() {
+          return Err("未找到 gradlew，请确认工程路径正确".into());
+        }
+      }
+      
+      // 更新工程信息（保留原有字段，用新值覆盖）
+      cfg.projects[idx] = project;
+      fs::write(path, serde_json::to_string_pretty(&cfg).unwrap()).map_err(|e| e.to_string())
+    }
+    None => Err(format!("工程不存在：{}", name)),
+  }
+}
+
+#[tauri::command]
 fn delete_project(app_handle: tauri::AppHandle, name: String) -> Result<(), String> {
   let path = ensure_config(&app_handle);
   let mut cfg = list_projects(app_handle.clone())?;
@@ -960,6 +986,7 @@ pub fn run() {
       check_env,
       list_projects,
       add_project,
+      update_project,
       delete_project,
       build_project,
       publish_apk,

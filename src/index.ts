@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import kleur from "kleur";
 import { checkEnv } from "./core/env";
-import { addProject, deleteProject, findProject, listProjects } from "./core/projects";
+import { addProject, deleteProject, findProject, listProjects, updateProject } from "./core/projects";
 import { runGradleBuild } from "./core/gradle";
 import { publishApk, type PublishConfig } from "./core/publish";
 import path from "path";
@@ -60,6 +60,31 @@ projects
         buildType: opts.buildType as "Debug" | "Release",
       });
       console.log(kleur.green(`已添加工程：${opts.name}`));
+    } catch (err) {
+      console.error(kleur.red((err as Error).message));
+      process.exitCode = 1;
+    }
+  });
+
+projects
+  .command("edit")
+  .alias("update")
+  .description("编辑已登记的工程")
+  .requiredOption("--name <name>", "工程名")
+  .option("--path <path>", "工程绝对路径")
+  .option("--module <module>", "默认模块，例如 app")
+  .option("--variant <variant>", "默认 Build Variant，例如 Ver-Dev")
+  .option("--build-type <type>", "Build Type (Debug 或 Release)")
+  .action((opts) => {
+    try {
+      const updateData: any = {};
+      if (opts.path) updateData.path = opts.path;
+      if (opts.module !== undefined) updateData.defaultModule = opts.module || undefined;
+      if (opts.variant !== undefined) updateData.defaultVariant = opts.variant || undefined;
+      if (opts.buildType) updateData.buildType = opts.buildType as "Debug" | "Release";
+      
+      updateProject(opts.name, updateData);
+      console.log(kleur.green(`已更新工程：${opts.name}`));
     } catch (err) {
       console.error(kleur.red((err as Error).message));
       process.exitCode = 1;
