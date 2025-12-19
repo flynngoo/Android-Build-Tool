@@ -1,0 +1,11 @@
+{
+  "projects": [
+    {
+      "name": "demo-app",
+      "path": "/absolute/path/to/android/project",
+      "defaultModule": "app",
+      "defaultVariant": "debug"
+    }
+  ]
+}
+

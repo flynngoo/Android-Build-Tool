@@ -1,0 +1,384 @@
+/*
+  Flat Design System (Light) — GUI styles
+  目标：彻底移除“玻璃态/阴影/按钮渐变”，改为色块 + 字体层级 + 清晰的交互反馈。
+  约束：保持 Ant Design 组件体系不变，仅通过 Token + 全局覆盖统一风格。
+*/
+
+/* ========== Layout ========== */
+.layout {
+  min-height: 100vh;
+  height: 100vh;
+  background: var(--ds-muted);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 海报感装饰：大几何形（低不透明度，无 blur） */
+.layout::before {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.08);
+  top: -220px;
+  left: -220px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.layout::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  background: rgba(16, 185, 129, 0.08);
+  right: -200px;
+  bottom: -220px;
+  transform: rotate(18deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 让 Ant Layout 本身透明，真正由 .layout 控制背景 */
+.ant-layout {
+  background: transparent !important;
+}
+
+/* ========== Sider ========== */
+.sider {
+  background: var(--ds-muted) !important;
+  border-right: 2px solid var(--ds-border);
+  box-shadow: none !important;
+  height: 100vh !important;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.sider-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-weight: 800;
+  font-size: 18px;
+  color: #ffffff;
+  background: var(--ds-primary);
+  letter-spacing: -0.02em;
+}
+
+.sider-menu {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: none !important;
+  background: transparent !important;
+  padding: 12px 8px;
+}
+
+.sider-menu .ant-menu-item {
+  margin: 6px 8px !important;
+  border-radius: var(--ds-radius-lg) !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  font-weight: 600;
+  color: var(--ds-fg);
+  transition: transform var(--ds-fast) var(--ds-ease),
+    background-color var(--ds-fast) var(--ds-ease),
+    color var(--ds-fast) var(--ds-ease);
+}
+
+.sider-menu .ant-menu-item .anticon {
+  font-size: 18px;
+}
+
+.sider-menu .ant-menu-item:hover {
+  background: #e5e7eb !important;
+  transform: translateX(2px);
+}
+
+.sider-menu .ant-menu-item-selected {
+  background: var(--ds-primary) !important;
+  color: #ffffff !important;
+}
+
+.sider-menu .ant-menu-item-selected:hover {
+  background: #2563eb !important;
+  transform: translateX(2px);
+}
+
+.sider-menu .ant-menu-item-selected .anticon {
+  color: #ffffff !important;
+}
+
+/* ========== Header / Content ========== */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px !important;
+  background: var(--ds-bg) !important;
+  border-bottom: 2px solid var(--ds-border);
+  box-shadow: none !important;
+  height: 64px;
+  line-height: 64px;
+  position: relative;
+  z-index: 1;
+}
+
+.header-title {
+  color: var(--ds-fg) !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ds-headerIcon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ds-muted);
+  color: var(--ds-primary);
+}
+
+.content {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: calc(100vh - 64px);
+  position: relative;
+  z-index: 1;
+}
+
+/* ========== Card（Color Block） ========== */
+.ant-card {
+  border-radius: var(--ds-radius-lg) !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: var(--ds-bg) !important;
+  transition: transform var(--ds-fast) var(--ds-ease),
+    background-color var(--ds-fast) var(--ds-ease);
+}
+
+.ant-card:hover {
+  transform: scale(1.01);
+}
+
+.ant-card-head {
+  border-bottom: 0 !important;
+  padding: 20px 24px !important;
+  background: transparent !important;
+}
+
+.ant-card-body {
+  padding: 24px !important;
+}
+
+.ant-card-head-title {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--ds-fg);
+}
+
+.ds-cardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ds-iconBadge {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ds-bg);
+  border: 2px solid var(--ds-border);
+  color: var(--ds-primary);
+  transition: transform var(--ds-fast) var(--ds-ease),
+    background-color var(--ds-fast) var(--ds-ease),
+    border-color var(--ds-fast) var(--ds-ease);
+}
+
+/* ========== Button（No shadow, strong hover） ========== */
+.ant-btn {
+  border-radius: var(--ds-radius-md) !important;
+  font-weight: 600;
+  box-shadow: none !important;
+  border: 0 !important;
+  transition: transform var(--ds-fast) var(--ds-ease),
+    background-color var(--ds-fast) var(--ds-ease),
+    color var(--ds-fast) var(--ds-ease),
+    border-color var(--ds-fast) var(--ds-ease);
+}
+
+.ant-btn:active {
+  transform: scale(0.98);
+}
+
+.ant-btn-lg {
+  height: 56px !important;
+  padding: 0 20px !important;
+  font-size: 16px !important;
+}
+
+.ant-btn-sm {
+  height: 40px !important;
+  padding: 0 14px !important;
+  font-size: 14px !important;
+}
+
+.ant-btn-primary {
+  background: var(--ds-primary) !important;
+  color: #ffffff !important;
+}
+
+.ant-btn-primary:hover {
+  background: #2563eb !important;
+  transform: scale(1.03);
+}
+
+.ant-btn-default {
+  background: var(--ds-muted) !important;
+  color: var(--ds-fg) !important;
+}
+
+.ant-btn-default:hover {
+  background: #e5e7eb !important;
+  transform: scale(1.03);
+}
+
+/* ========== Input / Select（Gray bg → White + hard border on focus） ========== */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector {
+  border-radius: var(--ds-radius-md) !important;
+  background: var(--ds-muted) !important;
+  border: 2px solid transparent !important;
+  box-shadow: none !important;
+  transition: background-color var(--ds-fast) var(--ds-ease),
+    border-color var(--ds-fast) var(--ds-ease),
+    transform var(--ds-fast) var(--ds-ease);
+}
+
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-select:hover .ant-select-selector {
+  border-color: var(--ds-border) !important;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector {
+  background: var(--ds-bg) !important;
+  border-color: var(--ds-primary) !important;
+}
+
+/* 清理 AntD 默认 focus 光晕（Flat 体系只用硬边框 + outline） */
+.ant-input:focus {
+  box-shadow: none !important;
+}
+
+/* ========== List（结构用粗边/色块，而非阴影） ========== */
+.ant-list-item {
+  padding: 16px !important;
+  border-radius: var(--ds-radius-lg);
+  margin-bottom: 10px;
+  background: var(--ds-bg);
+  border: 2px solid var(--ds-border) !important;
+  transition: transform var(--ds-fast) var(--ds-ease),
+    background-color var(--ds-fast) var(--ds-ease),
+    border-color var(--ds-fast) var(--ds-ease);
+}
+
+.ant-list-item:hover {
+  transform: scale(1.01);
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+/* ========== Tag（允许 pill） ========== */
+.ant-tag {
+  border: 0 !important;
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 4px 10px;
+}
+
+.ds-tag--ok {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #065f46 !important;
+}
+
+.ds-tag--bad {
+  background: rgba(239, 68, 68, 0.14) !important;
+  color: #991b1b !important;
+}
+
+.ds-tag--primary {
+  background: rgba(59, 130, 246, 0.14) !important;
+  color: #1d4ed8 !important;
+}
+
+.ds-tag--accent {
+  background: rgba(245, 158, 11, 0.16) !important;
+  color: #92400e !important;
+}
+
+/* ========== Divider（避免细线：用留白） ========== */
+.divider {
+  height: 16px;
+}
+
+/* ========== Alert（日志输出） ========== */
+.ant-alert {
+  border-radius: var(--ds-radius-lg) !important;
+  border: 2px solid var(--ds-border) !important;
+  background: var(--ds-bg) !important;
+  box-shadow: none !important;
+}
+
+.ant-alert-success {
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+
+.ant-alert-error {
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+.ds-logOutput {
+  margin: 0;
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+/* ========== Scrollbar（简洁、无渐变） ========== */
+.content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(17, 24, 39, 0.18);
+  border-radius: 999px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(17, 24, 39, 0.28);
+}
