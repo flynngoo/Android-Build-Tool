@@ -59,6 +59,29 @@ const findBuildArtifacts = (projectPath: string, module?: string): string[] => {
 };
 
 /**
+ * 清理目录中的所有文件和子目录
+ */
+const cleanDirectory = (dir: string): void => {
+  if (!fs.existsSync(dir)) {
+    return;
+  }
+  
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    try {
+      if (entry.isDirectory()) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      } else {
+        fs.unlinkSync(fullPath);
+      }
+    } catch (err) {
+      console.warn(`清理文件/目录失败: ${fullPath}`, err);
+    }
+  }
+};
+
+/**
  * 复制构建产物到输出目录
  */
 const copyArtifactsToOutputDir = (artifacts: string[], outputDir: string): void => {
@@ -69,8 +92,12 @@ const copyArtifactsToOutputDir = (artifacts: string[], outputDir: string): void 
   
   console.log(`准备复制 ${artifacts.length} 个文件到: ${outputDir}`);
   
-  // 确保输出目录存在
-  if (!fs.existsSync(outputDir)) {
+  // 如果输出目录已存在，先清理目录（确保只保留最新的构建产物）
+  if (fs.existsSync(outputDir)) {
+    console.log(`清理输出目录: ${outputDir}`);
+    cleanDirectory(outputDir);
+  } else {
+    // 如果不存在，创建目录
     fs.mkdirSync(outputDir, { recursive: true });
     console.log(`已创建输出目录: ${outputDir}`);
   }

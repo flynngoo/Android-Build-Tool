@@ -270,6 +270,12 @@ async fn build_project(
         output_text.push_str(&format!("  - {}\n", artifact.to_string_lossy()));
       }
       
+      // 如果输出目录已存在，先清理目录（确保只保留最新的构建产物）
+      if output_dir.exists() {
+        output_text.push_str(&format!("清理输出目录: {}\n", output_dir.to_string_lossy()));
+        clean_directory(&output_dir, &mut output_text);
+      }
+      
       // 确保输出目录存在
       if let Err(e) = fs::create_dir_all(&output_dir) {
         output_text.push_str(&format!("创建输出目录失败: {}\n", e));
@@ -302,6 +308,28 @@ async fn build_project(
     code,
     output: output_text,
   })
+}
+
+/// 清理目录中的所有文件和子目录
+fn clean_directory(dir: &Path, output_text: &mut String) {
+  if !dir.exists() {
+    return;
+  }
+  
+  if let Ok(entries) = fs::read_dir(dir) {
+    for entry in entries.flatten() {
+      let path = entry.path();
+      let result = if path.is_dir() {
+        fs::remove_dir_all(&path)
+      } else {
+        fs::remove_file(&path)
+      };
+      
+      if let Err(e) = result {
+        output_text.push_str(&format!("⚠️ 清理文件/目录失败: {}: {}\n", path.to_string_lossy(), e));
+      }
+    }
+  }
 }
 
 /// 查找构建产物（APK/AAB）

@@ -90,6 +90,11 @@ Android 打包工具（macOS）
 GUI（Tauri）使用
 ---------------
 - 目录：`gui/`，栈：Tauri + React + TypeScript + AntD。
+
+**重要：架构兼容性说明**
+- `aarch64` 版本（文件名包含 `_aarch64`）：只能在 **Apple Silicon Mac**（M1/M2/M3 芯片）上运行
+- `x86_64` 版本（文件名包含 `_x86_64`）：只能在 **Intel Mac** 上运行
+- **两个版本不能互相通用**，如果要在 Intel Mac 上使用，必须构建 x86_64 版本
 - **开发模式**：
   ```bash
   cd gui
@@ -109,6 +114,39 @@ GUI（Tauri）使用
     - `.dmg` 安装包（用于分发）
   - 首次打包会下载 Rust 工具链和依赖，可能需要较长时间
   - 打包前会自动执行 `pnpm build` 构建前端代码
+
+- **多架构构建说明**：
+  - **默认行为**：在 Apple Silicon（M1/M2/M3）Mac 上构建会生成 `aarch64` 版本，在 Intel Mac 上构建会生成 `x86_64` 版本
+  - **架构兼容性**：
+    - `aarch64` 版本：只能在 Apple Silicon Mac 上运行
+    - `x86_64` 版本：只能在 Intel Mac 上运行
+    - 两个版本不能互相通用，需要分别构建
+  - **为不同架构构建**：
+    - **在 Intel Mac 上构建 x86_64 版本**（推荐）：
+      ```bash
+      cd gui
+      pnpm tauri:build  # 在 Intel Mac 上直接构建即可生成 x86_64 版本
+      ```
+    - **在 Apple Silicon Mac 上交叉编译 x86_64 版本**（需要安装 x86_64 工具链）：
+      ```bash
+      cd gui
+      rustup target add x86_64-apple-darwin  # 安装 x86_64 目标平台
+      pnpm tauri:build:x86_64  # 或使用 pnpm tauri build --target x86_64-apple-darwin
+      ```
+    - **在 Apple Silicon Mac 上构建 aarch64 版本**（默认）：
+      ```bash
+      cd gui
+      pnpm tauri:build  # 默认构建 aarch64 版本
+      # 或明确指定
+      pnpm tauri:build:aarch64  # 或使用 pnpm tauri build --target aarch64-apple-darwin
+      ```
+    - **构建通用二进制文件（Universal Binary）**（同时包含两种架构）：
+      ```bash
+      cd gui
+      # 注意：Tauri 2.x 目前不支持直接构建 Universal Binary
+      # 建议：分别构建 aarch64 和 x86_64 版本，然后分别分发
+      # 用户根据自己 Mac 的芯片类型选择对应的版本使用
+      ```
 - **功能**：环境检测、工程列表/添加（写入 `config/projects.json`）、选择工程/模块/variant 进行构建并展示日志、自动发布到蒲公英/fir.im。
 
 目录结构（当前/拟定）
