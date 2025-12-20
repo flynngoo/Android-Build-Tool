@@ -1,55 +1,29 @@
-/*
-  Flat Design System (Light) — GUI styles
-  目标：彻底移除“玻璃态/阴影/按钮渐变”，改为色块 + 字体层级 + 清晰的交互反馈。
-  约束：保持 Ant Design 组件体系不变，仅通过 Token + 全局覆盖统一风格。
-*/
+/**
+ * Neumorphism (Soft UI) 设计系统 - 应用级样式
+ * 
+ * 这个文件包含应用特定的样式，包括布局、组件覆盖等。
+ * 核心：所有元素使用双阴影创建 3D 深度效果。
+ */
 
 /* ========== Layout ========== */
 .layout {
   min-height: 100vh;
   height: 100vh;
-  background: var(--ds-muted);
+  background: var(--neu-bg);
   position: relative;
   overflow: hidden;
 }
 
-/* 海报感装饰：大几何形（低不透明度，无 blur） */
-.layout::before {
-  content: "";
-  position: absolute;
-  width: 520px;
-  height: 520px;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.08);
-  top: -220px;
-  left: -220px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.layout::after {
-  content: "";
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  background: rgba(16, 185, 129, 0.08);
-  right: -200px;
-  bottom: -220px;
-  transform: rotate(18deg);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* 让 Ant Layout 本身透明，真正由 .layout 控制背景 */
+/* 移除装饰性元素，保持干净的 neumorphic 背景 */
 .ant-layout {
   background: transparent !important;
 }
 
-/* ========== Sider ========== */
+/* ========== Sider（侧边栏） ========== */
 .sider {
-  background: var(--ds-muted) !important;
-  border-right: 2px solid var(--ds-border);
-  box-shadow: none !important;
+  background: var(--neu-bg) !important;
+  border-right: none !important; /* Neumorphism 不使用边框 */
+  box-shadow: 9px 0 16px var(--neu-shadow-dark), -9px 0 16px var(--neu-shadow-light) !important;
   height: 100vh !important;
   overflow: hidden;
   position: relative;
@@ -60,12 +34,14 @@
   height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
+  font-family: var(--neu-font-display);
   font-weight: 800;
   font-size: 18px;
-  color: #ffffff;
-  background: var(--ds-primary);
+  color: var(--neu-fg);
+  background: var(--neu-bg);
   letter-spacing: -0.02em;
+  box-shadow: inset 0 2px 4px var(--neu-shadow-dark-inset), inset 0 -2px 4px var(--neu-shadow-light-inset);
 }
 
 .sider-menu {
@@ -74,52 +50,55 @@
   overflow-x: hidden;
   border: none !important;
   background: transparent !important;
-  padding: 12px 8px;
+  padding: 16px 12px;
 }
 
 .sider-menu .ant-menu-item {
-  margin: 6px 8px !important;
-  border-radius: var(--ds-radius-lg) !important;
+  margin: 8px 0 !important;
+  border-radius: var(--neu-radius-base) !important;
   height: 48px !important;
   line-height: 48px !important;
-  font-weight: 600;
-  color: var(--ds-fg);
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    color var(--ds-fast) var(--ds-ease);
+  font-family: var(--neu-font-body);
+  font-weight: 500;
+  color: var(--neu-fg);
+  background: var(--neu-bg);
+  box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
+  transition: all var(--neu-transition);
 }
 
 .sider-menu .ant-menu-item .anticon {
   font-size: 18px;
+  margin-right: 12px;
 }
 
 .sider-menu .ant-menu-item:hover {
-  background: #e5e7eb !important;
-  transform: translateX(2px);
+  box-shadow: 6px 6px 12px var(--neu-shadow-dark-hover), -6px -6px 12px var(--neu-shadow-light-hover);
+  transform: translateY(-1px);
 }
 
 .sider-menu .ant-menu-item-selected {
-  background: var(--ds-primary) !important;
-  color: #ffffff !important;
+  background: var(--neu-bg) !important;
+  color: var(--neu-accent) !important;
+  box-shadow: inset 6px 6px 10px var(--neu-shadow-dark-inset), inset -6px -6px 10px var(--neu-shadow-light-inset);
 }
 
 .sider-menu .ant-menu-item-selected:hover {
-  background: #2563eb !important;
-  transform: translateX(2px);
+  box-shadow: inset 8px 8px 12px var(--neu-shadow-dark-inset-deep), inset -8px -8px 12px var(--neu-shadow-light-inset-deep);
+  transform: translateY(0);
 }
 
 .sider-menu .ant-menu-item-selected .anticon {
-  color: #ffffff !important;
+  color: var(--neu-accent) !important;
 }
 
-/* ========== Header / Content ========== */
+/* ========== Header ========== */
 .header {
   display: flex;
   align-items: center;
-  padding: 0 24px !important;
-  background: var(--ds-bg) !important;
-  border-bottom: 2px solid var(--ds-border);
-  box-shadow: none !important;
+  padding: 0 32px !important;
+  background: var(--neu-bg) !important;
+  border-bottom: none !important; /* Neumorphism 不使用边框 */
+  box-shadow: 0 4px 8px var(--neu-shadow-dark), 0 -4px 8px var(--neu-shadow-light) !important;
   height: 64px;
   line-height: 64px;
   position: relative;
@@ -127,63 +106,68 @@
 }
 
 .header-title {
-  color: var(--ds-fg) !important;
+  color: var(--neu-fg) !important;
+  font-family: var(--neu-font-display);
   font-size: 20px !important;
   font-weight: 800 !important;
   letter-spacing: -0.02em;
   margin: 0 !important;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ds-headerIcon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: var(--ds-muted);
-  color: var(--ds-primary);
+  border-radius: var(--neu-radius-full);
+  background: var(--neu-bg);
+  box-shadow: inset 6px 6px 10px var(--neu-shadow-dark-inset), inset -6px -6px 10px var(--neu-shadow-light-inset);
+  color: var(--neu-accent);
 }
 
+/* ========== Content ========== */
 .content {
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
   max-height: calc(100vh - 64px);
   position: relative;
   z-index: 1;
 }
 
-/* ========== Card（Color Block） ========== */
+/* ========== Card（Neumorphic 卡片） ========== */
 .ant-card {
-  border-radius: var(--ds-radius-lg) !important;
-  box-shadow: none !important;
-  border: 0 !important;
-  background: var(--ds-bg) !important;
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease);
+  border-radius: var(--neu-radius-container) !important;
+  box-shadow: 9px 9px 16px var(--neu-shadow-dark), -9px -9px 16px var(--neu-shadow-light) !important;
+  border: none !important; /* Neumorphism 不使用边框 */
+  background: var(--neu-bg) !important;
+  transition: all var(--neu-transition);
+  overflow: hidden;
 }
 
 .ant-card:hover {
-  transform: scale(1.01);
+  box-shadow: 12px 12px 20px var(--neu-shadow-dark-hover), -12px -12px 20px var(--neu-shadow-light-hover) !important;
+  transform: translateY(-2px);
 }
 
 .ant-card-head {
-  border-bottom: 0 !important;
-  padding: 20px 24px !important;
+  border-bottom: none !important; /* Neumorphism 不使用边框 */
+  padding: 24px 32px !important;
   background: transparent !important;
 }
 
 .ant-card-body {
-  padding: 24px !important;
+  padding: 32px !important;
 }
 
 .ant-card-head-title {
-  font-weight: 800;
-  font-size: 18px;
-  color: var(--ds-fg);
+  font-family: var(--neu-font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--neu-fg);
 }
 
 .ds-cardTitle {
@@ -193,165 +177,178 @@
 }
 
 .ds-iconBadge {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: var(--ds-bg);
-  border: 2px solid var(--ds-border);
-  color: var(--ds-primary);
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease);
+  border-radius: var(--neu-radius-full);
+  background: var(--neu-bg);
+  box-shadow: inset 8px 8px 12px var(--neu-shadow-dark-inset-deep), inset -8px -8px 12px var(--neu-shadow-light-inset-deep);
+  color: var(--neu-accent);
+  transition: all var(--neu-transition);
 }
 
-/* ========== Button（No shadow, strong hover） ========== */
+.ds-iconBadge:hover {
+  box-shadow: inset 10px 10px 16px var(--neu-shadow-dark-inset-deep), inset -10px -10px 16px var(--neu-shadow-light-inset-deep);
+  transform: scale(1.05);
+}
+
+/* ========== Button（Neumorphic 按钮） ========== */
 .ant-btn {
-  border-radius: var(--ds-radius-md) !important;
+  border-radius: var(--neu-radius-base) !important;
+  font-family: var(--neu-font-body);
   font-weight: 600;
-  box-shadow: none !important;
-  border: 0 !important;
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease);
+  box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light) !important;
+  border: none !important;
+  transition: all var(--neu-transition);
+  background: var(--neu-bg) !important;
 }
 
 .ant-btn:active {
-  transform: scale(0.98);
+  box-shadow: inset 3px 3px 6px var(--neu-shadow-dark-inset), inset -3px -3px 6px var(--neu-shadow-light-inset) !important;
+  transform: translateY(0.5px);
 }
 
 .ant-btn-lg {
   height: 56px !important;
-  padding: 0 20px !important;
+  padding: 0 24px !important;
   font-size: 16px !important;
 }
 
 .ant-btn-sm {
   height: 40px !important;
-  padding: 0 14px !important;
+  padding: 0 16px !important;
   font-size: 14px !important;
 }
 
 .ant-btn-primary {
-  background: var(--ds-primary) !important;
+  background: var(--neu-accent) !important;
   color: #ffffff !important;
+  box-shadow: 5px 5px 10px rgb(108, 99, 255, 0.4), -5px -5px 10px rgba(255, 255, 255, 0.3) !important;
 }
 
 .ant-btn-primary:hover {
-  background: #2563eb !important;
-  transform: scale(1.03);
+  background: var(--neu-accent-light) !important;
+  box-shadow: 6px 6px 12px rgb(108, 99, 255, 0.5), -6px -6px 12px rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.ant-btn-primary:active {
+  box-shadow: inset 3px 3px 6px rgb(76, 70, 204, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(0.5px);
 }
 
 .ant-btn-default {
-  background: var(--ds-muted) !important;
-  color: var(--ds-fg) !important;
+  background: var(--neu-bg) !important;
+  color: var(--neu-fg) !important;
 }
 
 .ant-btn-default:hover {
-  background: #e5e7eb !important;
-  transform: scale(1.03);
+  box-shadow: 6px 6px 12px var(--neu-shadow-dark-hover), -6px -6px 12px var(--neu-shadow-light-hover) !important;
+  transform: translateY(-1px);
 }
 
-/* ========== Input / Select（Gray bg → White + hard border on focus） ========== */
+/* ========== Input / Select（Neumorphic 输入框） ========== */
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select-selector {
-  border-radius: var(--ds-radius-md) !important;
-  background: var(--ds-muted) !important;
-  border: 2px solid transparent !important;
-  box-shadow: none !important;
-  transition: background-color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease),
-    transform var(--ds-fast) var(--ds-ease);
+  border-radius: var(--neu-radius-base) !important;
+  background: var(--neu-bg) !important;
+  border: none !important; /* Neumorphism 不使用边框 */
+  box-shadow: inset 6px 6px 10px var(--neu-shadow-dark-inset), inset -6px -6px 10px var(--neu-shadow-light-inset) !important;
+  transition: all var(--neu-transition);
+  font-family: var(--neu-font-body);
+  color: var(--neu-fg);
 }
 
 .ant-input:hover,
 .ant-input-affix-wrapper:hover,
 .ant-select:hover .ant-select-selector {
-  border-color: var(--ds-border) !important;
+  box-shadow: inset 7px 7px 12px var(--neu-shadow-dark-inset), inset -7px -7px 12px var(--neu-shadow-light-inset) !important;
 }
 
 .ant-input:focus,
 .ant-input-affix-wrapper-focused,
 .ant-select-focused .ant-select-selector {
-  background: var(--ds-bg) !important;
-  border-color: var(--ds-primary) !important;
+  box-shadow: inset 10px 10px 20px var(--neu-shadow-dark-inset-deep), inset -10px -10px 20px var(--neu-shadow-light-inset-deep) !important;
+  outline: 2px solid var(--neu-accent);
+  outline-offset: 2px;
 }
 
-/* 清理 AntD 默认 focus 光晕（Flat 体系只用硬边框 + outline） */
-.ant-input:focus {
-  box-shadow: none !important;
+.ant-input::placeholder {
+  color: #A0AEC0;
+  opacity: 1;
 }
 
-/* ========== List（结构用粗边/色块，而非阴影） ========== */
+/* ========== List（Neumorphic 列表项） ========== */
 .ant-list-item {
-  padding: 16px !important;
-  border-radius: var(--ds-radius-lg);
-  margin-bottom: 10px;
-  background: var(--ds-bg);
-  border: 2px solid var(--ds-border) !important;
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease);
+  padding: 20px !important;
+  border-radius: var(--neu-radius-base);
+  margin-bottom: 12px;
+  background: var(--neu-bg);
+  border: none !important; /* Neumorphism 不使用边框 */
+  box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
+  transition: all var(--neu-transition);
 }
 
 .ant-list-item:hover {
-  transform: scale(1.01);
-  border-color: rgba(59, 130, 246, 0.35) !important;
+  box-shadow: 6px 6px 12px var(--neu-shadow-dark-hover), -6px -6px 12px var(--neu-shadow-light-hover);
+  transform: translateY(-1px);
 }
 
-/* ========== Tag（允许 pill） ========== */
+/* ========== Tag（Neumorphic 标签） ========== */
 .ant-tag {
-  border: 0 !important;
-  border-radius: 999px;
-  font-weight: 700;
-  padding: 4px 10px;
+  border: none !important;
+  border-radius: var(--neu-radius-full);
+  font-family: var(--neu-font-body);
+  font-weight: 600;
+  padding: 4px 12px;
+  font-size: 12px;
+  background: var(--neu-bg);
+  box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+  color: var(--neu-fg);
 }
 
 .ds-tag--ok {
-  background: rgba(16, 185, 129, 0.14) !important;
-  color: #065f46 !important;
+  background: var(--neu-accent-secondary) !important;
+  color: #ffffff !important;
+  box-shadow: 3px 3px 6px rgb(56, 178, 172, 0.4), -3px -3px 6px rgba(255, 255, 255, 0.3) !important;
 }
 
 .ds-tag--bad {
-  background: rgba(239, 68, 68, 0.14) !important;
-  color: #991b1b !important;
+  background: #EF4444 !important;
+  color: #ffffff !important;
+  box-shadow: 3px 3px 6px rgb(239, 68, 68, 0.4), -3px -3px 6px rgba(255, 255, 255, 0.3) !important;
 }
 
 .ds-tag--primary {
-  background: rgba(59, 130, 246, 0.14) !important;
-  color: #1d4ed8 !important;
+  background: var(--neu-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 3px 3px 6px rgb(108, 99, 255, 0.4), -3px -3px 6px rgba(255, 255, 255, 0.3) !important;
 }
 
-.ds-tag--accent {
-  background: rgba(245, 158, 11, 0.16) !important;
-  color: #92400e !important;
-}
-
-/* ========== Divider（避免细线：用留白） ========== */
-.divider {
-  height: 16px;
-}
-
-/* ========== Alert（日志输出） ========== */
+/* ========== Alert（Neumorphic 警告框） ========== */
 .ant-alert {
-  border-radius: var(--ds-radius-lg) !important;
-  border: 2px solid var(--ds-border) !important;
-  background: var(--ds-bg) !important;
-  box-shadow: none !important;
+  border-radius: var(--neu-radius-base) !important;
+  border: none !important; /* Neumorphism 不使用边框 */
+  background: var(--neu-bg) !important;
+  box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light) !important;
 }
 
 .ant-alert-success {
-  border-color: rgba(16, 185, 129, 0.35) !important;
-  background: rgba(16, 185, 129, 0.08) !important;
+  background: var(--neu-bg) !important;
+  box-shadow: 5px 5px 10px rgb(56, 178, 172, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.4) !important;
 }
 
 .ant-alert-error {
-  border-color: rgba(239, 68, 68, 0.35) !important;
-  background: rgba(239, 68, 68, 0.08) !important;
+  background: var(--neu-bg) !important;
+  box-shadow: 5px 5px 10px rgb(239, 68, 68, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.4) !important;
+}
+
+.ant-alert-info {
+  background: var(--neu-bg) !important;
+  box-shadow: 5px 5px 10px rgb(108, 99, 255, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.4) !important;
 }
 
 .ds-logOutput {
@@ -360,12 +357,115 @@
   max-height: 400px;
   overflow: auto;
   font-size: 13px;
-  line-height: 1.5;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: var(--neu-bg);
+  padding: 16px;
+  border-radius: var(--neu-radius-inner);
+  box-shadow: inset 6px 6px 10px var(--neu-shadow-dark-inset), inset -6px -6px 10px var(--neu-shadow-light-inset);
 }
 
-/* ========== Scrollbar（简洁、无渐变） ========== */
+/* ========== Modal（Neumorphic 模态框） ========== */
+.ant-modal {
+  border-radius: var(--neu-radius-container) !important;
+}
+
+.ant-modal-content {
+  border-radius: var(--neu-radius-container) !important;
+  background: var(--neu-bg) !important;
+  box-shadow: 20px 20px 40px var(--neu-shadow-dark-hover), -20px -20px 40px var(--neu-shadow-light-hover) !important;
+  border: none !important;
+}
+
+.ant-modal-header {
+  border-bottom: none !important;
+  padding: 24px 32px !important;
+  background: transparent !important;
+}
+
+.ant-modal-title {
+  font-family: var(--neu-font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--neu-fg);
+}
+
+.ant-modal-body {
+  padding: 32px !important;
+}
+
+/* ========== Form ========== */
+.ant-form-item-label > label {
+  font-family: var(--neu-font-body);
+  font-weight: 500;
+  color: var(--neu-fg);
+}
+
+/* ========== Typography ========== */
+.ant-typography {
+  font-family: var(--neu-font-body);
+  color: var(--neu-fg);
+}
+
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3,
+.ant-typography h4,
+.ant-typography h5,
+.ant-typography h6 {
+  font-family: var(--neu-font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ========== Collapse（折叠面板） ========== */
+.ant-collapse {
+  background: var(--neu-bg) !important;
+  border: none !important;
+  border-radius: var(--neu-radius-base) !important;
+  box-shadow: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
+}
+
+.ant-collapse-item {
+  border-bottom: none !important;
+  margin-bottom: 8px;
+}
+
+.ant-collapse-header {
+  padding: 16px 24px !important;
+  font-weight: 600;
+  font-family: var(--neu-font-body);
+  background: var(--neu-bg);
+  border-radius: var(--neu-radius-base);
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important;
+}
+
+/* 确保箭头图标与文字垂直对齐 */
+.ant-collapse-header .ant-collapse-arrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-right: 12px !important;
+  line-height: 1.5 !important;
+  height: auto !important;
+  vertical-align: middle !important;
+}
+
+/* 确保 header 内容区域也垂直对齐 */
+.ant-collapse-header-text {
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important;
+  flex: 1 !important;
+}
+
+.ant-collapse-content-box {
+  padding: 16px 24px !important;
+}
+
+/* ========== Scrollbar（滚动条） ========== */
 .content::-webkit-scrollbar {
   width: 10px;
 }
@@ -375,10 +475,10 @@
 }
 
 .content::-webkit-scrollbar-thumb {
-  background: rgba(17, 24, 39, 0.18);
-  border-radius: 999px;
+  background: var(--neu-shadow-dark);
+  border-radius: var(--neu-radius-full);
 }
 
 .content::-webkit-scrollbar-thumb:hover {
-  background: rgba(17, 24, 39, 0.28);
+  background: rgb(163, 177, 198, 0.8);
 }

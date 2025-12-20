@@ -38,7 +38,8 @@ import {
   DeleteOutlined,
   MinusCircleOutlined,
   CloudUploadOutlined,
-  EditOutlined
+  EditOutlined,
+  FolderOpenOutlined
 } from "@ant-design/icons";
 import "./App.css";
 
@@ -67,19 +68,19 @@ const statusTag = (ok: boolean) => (
 
 const dsTheme: ThemeConfig = {
   token: {
-    colorPrimary: "#3B82F6",
-    colorInfo: "#3B82F6",
-    colorSuccess: "#10B981",
+    colorPrimary: "#6C63FF", // Neumorphism accent color
+    colorInfo: "#6C63FF",
+    colorSuccess: "#38B2AC", // Neumorphism accent secondary
     colorWarning: "#F59E0B",
     colorError: "#EF4444",
-    colorText: "#111827",
-    colorTextSecondary: "#374151",
-    colorBgLayout: "#F3F4F6",
-    colorBgContainer: "#FFFFFF",
-    colorBorder: "#E5E7EB",
-    borderRadius: 8,
-    fontFamily:
-      '"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif',
+    colorText: "#3D4852", // Neumorphism foreground
+    colorTextSecondary: "#6B7280", // Neumorphism muted
+    colorBgLayout: "#E0E5EC", // Neumorphism background
+    colorBgContainer: "#E0E5EC", // Same as background (neumorphic principle)
+    colorBorder: "transparent", // Neumorphism never uses borders
+    borderRadius: 16, // Neumorphism base radius
+    fontFamily: '"DM Sans", system-ui, sans-serif',
+    // Shadows are handled via CSS, not Ant Design tokens
     boxShadow: "none",
     boxShadowSecondary: "none",
     boxShadowTertiary: "none",
@@ -1179,28 +1180,69 @@ function App() {
           </Button>
         </Form.Item>
       </Form>
-      {buildResult && (
-        <Collapse
-          style={{ marginTop: 20 }}
-          activeKey={buildLogCollapsed ? [] : ['build-log']}
-          onChange={(keys) => setBuildLogCollapsed(keys.length === 0)}
-          items={[
-            {
-              key: 'build-log',
-              label: (
-                <span style={{ fontSize: '15px', fontWeight: 800 }}>
-                  {buildResult.code === 0 ? "✅ 构建成功" : `❌ 构建失败（退出码 ${buildResult.code}）`}
-                </span>
-              ),
-              children: (
-                <pre className="ds-logOutput" style={{ margin: 0, padding: '12px', backgroundColor: 'var(--ds-bg-layout)', borderRadius: '4px' }}>
-                  {buildResult.output}
-                </pre>
-              ),
-            },
-          ]}
-        />
-      )}
+      {buildResult && (() => {
+        // 从构建输出中提取输出目录路径（仅在构建成功时提取）
+        let outputDir: string | null = null;
+        if (buildResult.code === 0) {
+          // 格式：输出目录: {路径} 或 输出目录: {路径}\n
+          const outputLines = buildResult.output.split('\n');
+          for (const line of outputLines) {
+            if (line.includes('输出目录:')) {
+              // 匹配 "输出目录: " 后面的路径（去除前后空格）
+              const match = line.match(/输出目录:\s*(.+?)(?:\s*$|$)/);
+              if (match && match[1]) {
+                outputDir = match[1].trim();
+                // 如果路径不为空，则使用
+                if (outputDir.length > 0) {
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        return (
+          <Collapse
+            style={{ marginTop: 20 }}
+            activeKey={buildLogCollapsed ? [] : ['build-log']}
+            onChange={(keys) => setBuildLogCollapsed(keys.length === 0)}
+            items={[
+              {
+                key: 'build-log',
+                label: (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', lineHeight: '1.5' }}>
+                    <span style={{ fontSize: '15px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', lineHeight: '1.5' }}>
+                      {buildResult.code === 0 ? "✅ 构建成功" : `❌ 构建失败（退出码 ${buildResult.code}）`}
+                    </span>
+                    {buildResult.code === 0 && outputDir && (
+                      <Button
+                        type="primary"
+                        icon={<FolderOpenOutlined />}
+                        size="small"
+                        onClick={async (e) => {
+                          e.stopPropagation(); // 阻止 Collapse 的展开/收起
+                          try {
+                            await invoke("open_folder", { folderPath: outputDir });
+                          } catch (error) {
+                            messageApi.error(`打开文件夹失败: ${(error as Error).message}`);
+                          }
+                        }}
+                      >
+                        打开输出文件夹
+                      </Button>
+                    )}
+                  </div>
+                ),
+                children: (
+                  <pre className="ds-logOutput" style={{ margin: 0, padding: '12px', backgroundColor: 'var(--ds-bg-layout)', borderRadius: '4px' }}>
+                    {buildResult.output}
+                  </pre>
+                ),
+              },
+            ]}
+          />
+        );
+      })()}
       {publishing && (
         <Alert
           style={{ marginTop: 20 }}

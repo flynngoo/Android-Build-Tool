@@ -943,6 +943,60 @@ async fn publish_apk(
   }
 }
 
+/// 打开文件夹（macOS 使用 open 命令，Windows 使用 explorer，Linux 使用 xdg-open）
+#[tauri::command]
+fn open_folder(folder_path: String) -> Result<(), String> {
+  let path = Path::new(&folder_path);
+  if !path.exists() {
+    return Err(format!("文件夹不存在: {}", folder_path));
+  }
+  
+  if !path.is_dir() {
+    return Err(format!("路径不是文件夹: {}", folder_path));
+  }
+  
+  #[cfg(target_os = "macos")]
+  {
+    let output = StdCommand::new("open")
+      .arg(&folder_path)
+      .output()
+      .map_err(|e| format!("打开文件夹失败: {}", e))?;
+    
+    if !output.status.success() {
+      let error_msg = String::from_utf8_lossy(&output.stderr);
+      return Err(format!("打开文件夹失败: {}", error_msg));
+    }
+  }
+  
+  #[cfg(target_os = "windows")]
+  {
+    let output = StdCommand::new("explorer")
+      .arg(&folder_path)
+      .output()
+      .map_err(|e| format!("打开文件夹失败: {}", e))?;
+    
+    if !output.status.success() {
+      let error_msg = String::from_utf8_lossy(&output.stderr);
+      return Err(format!("打开文件夹失败: {}", error_msg));
+    }
+  }
+  
+  #[cfg(target_os = "linux")]
+  {
+    let output = StdCommand::new("xdg-open")
+      .arg(&folder_path)
+      .output()
+      .map_err(|e| format!("打开文件夹失败: {}", e))?;
+    
+    if !output.status.success() {
+      let error_msg = String::from_utf8_lossy(&output.stderr);
+      return Err(format!("打开文件夹失败: {}", error_msg));
+    }
+  }
+  
+  Ok(())
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -993,7 +1047,8 @@ pub fn run() {
       list_publish_platforms,
       add_publish_platform,
       update_publish_platform,
-      delete_publish_platform
+      delete_publish_platform,
+      open_folder
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
