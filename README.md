@@ -61,6 +61,76 @@ Android 打包工具（macOS）
    - 确保已安装 JDK 17+ 和 Xcode Command Line Tools
    - 运行 `pnpm dev -- env` 检查环境状态
 
+### 启动命令
+
+#### CLI 启动
+
+**开发模式（推荐）**：
+```bash
+# 在项目根目录执行
+pnpm dev -- <命令>
+```
+
+**生产模式**：
+```bash
+# 1. 先编译 TypeScript
+pnpm build
+
+# 2. 运行编译后的代码
+node dist/index.js <命令>
+```
+
+**全局安装（可选）**：
+```bash
+# 在项目根目录执行
+pnpm link --global
+
+# 之后可以在任何地方使用
+abt <命令>
+```
+
+#### GUI 启动
+
+**开发模式**：
+```bash
+# 进入 GUI 目录
+cd gui
+
+# 启动开发服务器（首次需要安装依赖）
+pnpm install
+pnpm tauri:dev
+# 或
+pnpm tauri dev
+```
+
+**生产模式（打包应用）**：
+```bash
+# 进入 GUI 目录
+cd gui
+
+# 构建应用（会自动构建前端代码）
+pnpm tauri:build
+# 或
+pnpm tauri build
+
+# 构建产物位置
+# macOS: gui/src-tauri/target/release/bundle/
+#   - .app 文件（可直接运行）
+#   - .dmg 安装包（用于分发）
+```
+
+**快速启动示例**：
+```bash
+# CLI - 检查环境
+pnpm dev -- env
+
+# CLI - 列出工程
+pnpm dev -- projects list
+
+# GUI - 启动图形界面
+cd gui && pnpm tauri:dev
+```
+
 ### 使用
 
 1. **准备项目**：将一个或多个 Android 工程置于工作区，确保有 `gradlew`。
@@ -91,31 +161,23 @@ Android 打包工具（macOS）
 
 GUI（Tauri）使用
 ---------------
-- 目录：`gui/`，栈：Tauri + React + TypeScript + AntD。
+- 目录：`gui/`，栈：Tauri + React + TypeScript + Ant Design。
+- **设计系统**：采用 "Minimalist Modern" 设计系统，具有以下特点：
+  - **渐变主题**：Electric Blue 渐变（#0052FF → #4D7CFF）作为主要强调色
+  - **双字体系统**：Calistoga（标题）+ Inter（UI/正文）+ JetBrains Mono（代码/标签）
+  - **动画效果**：使用 Framer Motion 实现流畅的进入动画和微交互
+  - **现代视觉**：渐变按钮、卡片阴影、浮动动画等现代设计元素
+  - **响应式设计**：适配不同屏幕尺寸，保持视觉一致性
 
 **重要：架构兼容性说明**
 - `aarch64` 版本（文件名包含 `_aarch64`）：只能在 **Apple Silicon Mac**（M1/M2/M3 芯片）上运行
 - `x86_64` 版本（文件名包含 `_x86_64`）：只能在 **Intel Mac** 上运行
 - **两个版本不能互相通用**，如果要在 Intel Mac 上使用，必须构建 x86_64 版本
-- **开发模式**：
-  ```bash
-  cd gui
-  pnpm install          # 首次需要安装依赖
-  pnpm tauri:dev        # 或使用 pnpm tauri dev
-  ```
-  需要环境：Rust、Tauri 依赖、Xcode Command Line Tools。
-- **打包应用**：
-  ```bash
-  cd gui
-  pnpm install          # 确保依赖已安装
-  pnpm tauri:build      # 或使用 pnpm tauri build
-  ```
-  打包产物位置：
-  - macOS: `gui/src-tauri/target/release/bundle/` 目录下
-    - `.app` 文件（可直接运行）
-    - `.dmg` 安装包（用于分发）
-  - 首次打包会下载 Rust 工具链和依赖，可能需要较长时间
-  - 打包前会自动执行 `pnpm build` 构建前端代码
+
+**环境要求**：
+- Rust（用于 Tauri 后端）
+- Tauri 依赖（首次运行 `pnpm tauri:dev` 会自动安装）
+- Xcode Command Line Tools（用于编译）
 
 - **多架构构建说明**：
   - **默认行为**：在 Apple Silicon（M1/M2/M3）Mac 上构建会生成 `aarch64` 版本，在 Intel Mac 上构建会生成 `x86_64` 版本

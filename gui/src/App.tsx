@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { open as openUrl } from "@tauri-apps/plugin-shell";
+import { motion } from "framer-motion";
 import {
   App as AntdApp,
   Alert,
@@ -40,6 +41,9 @@ import {
   CloudUploadOutlined,
   EditOutlined
 } from "@ant-design/icons";
+import { GradientText } from "./components/ui/GradientText";
+import { SectionLabel } from "./components/ui/SectionLabel";
+import { fadeInUp, stagger, viewportOptions } from "./lib/animations";
 import "./App.css";
 
 type EnvCheck = { tool: string; ok: boolean; message: string; detail?: string };
@@ -67,22 +71,21 @@ const statusTag = (ok: boolean) => (
 
 const dsTheme: ThemeConfig = {
   token: {
-    colorPrimary: "#3B82F6",
-    colorInfo: "#3B82F6",
+    colorPrimary: "#0052FF", // Electric Blue
+    colorInfo: "#0052FF",
     colorSuccess: "#10B981",
     colorWarning: "#F59E0B",
     colorError: "#EF4444",
-    colorText: "#111827",
-    colorTextSecondary: "#374151",
-    colorBgLayout: "#F3F4F6",
+    colorText: "#0F172A", // Slate-900
+    colorTextSecondary: "#64748B", // Slate-500
+    colorBgLayout: "#FAFAFA",
     colorBgContainer: "#FFFFFF",
-    colorBorder: "#E5E7EB",
-    borderRadius: 8,
-    fontFamily:
-      '"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif',
-    boxShadow: "none",
-    boxShadowSecondary: "none",
-    boxShadowTertiary: "none",
+    colorBorder: "#E2E8F0", // Slate-200
+    borderRadius: 12, // rounded-xl
+    fontFamily: '"Inter", system-ui, sans-serif',
+    boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
+    boxShadowSecondary: "0 10px 15px rgba(0,0,0,0.08)",
+    boxShadowTertiary: "0 20px 25px rgba(0,0,0,0.1)",
   },
 };
 
@@ -435,59 +438,69 @@ function App() {
   };
 
   const envSection = (
-    <Card
-      title={
-        <span className="ds-cardTitle">
-          <span className="ds-iconBadge">
-            <ToolOutlined />
-          </span>
-          <span>环境检测</span>
-        </span>
-      }
-      extra={
-        <Button icon={<ReloadOutlined />} onClick={loadEnv} loading={envLoading} size="small">
-          刷新环境
-        </Button>
-      }
-      loading={envLoading}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeInUp}
     >
-      {envChecks.length === 0 ? (
-        <Typography.Text type="secondary" style={{ display: 'block', textAlign: 'center', padding: '20px' }}>
-          点击"刷新环境"按钮开始检测
-        </Typography.Text>
-      ) : (
-        <List
-          dataSource={envChecks}
-          renderItem={(item) => (
-            <List.Item>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                  <Typography.Text strong style={{ fontSize: '15px' }}>{item.tool}</Typography.Text>
-                  {statusTag(item.ok)}
-                </div>
-                <Typography.Text type={item.ok ? "secondary" : "danger"} style={{ fontSize: '13px' }}>
-                  {item.message}
-                  {item.detail ? ` | ${item.detail}` : ""}
-                </Typography.Text>
-              </Space>
-            </List.Item>
-          )}
-        />
-      )}
-    </Card>
-  );
-
-  const projectsSection = (
-    <>
       <Card
         title={
           <span className="ds-cardTitle">
             <span className="ds-iconBadge">
-              <FolderOutlined />
+              <ToolOutlined />
             </span>
-            <span>工程管理</span>
+            <span>环境<GradientText>检测</GradientText></span>
           </span>
         }
+        extra={
+          <Button icon={<ReloadOutlined />} onClick={loadEnv} loading={envLoading} size="small">
+            刷新环境
+          </Button>
+        }
+        loading={envLoading}
+      >
+        {envChecks.length === 0 ? (
+          <Typography.Text type="secondary" style={{ display: 'block', textAlign: 'center', padding: '20px' }}>
+            点击"刷新环境"按钮开始检测
+          </Typography.Text>
+        ) : (
+          <List
+            dataSource={envChecks}
+            renderItem={(item) => (
+              <List.Item>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <Typography.Text strong style={{ fontSize: '15px' }}>{item.tool}</Typography.Text>
+                    {statusTag(item.ok)}
+                  </div>
+                  <Typography.Text type={item.ok ? "secondary" : "danger"} style={{ fontSize: '13px' }}>
+                    {item.message}
+                    {item.detail ? ` | ${item.detail}` : ""}
+                  </Typography.Text>
+                </Space>
+              </List.Item>
+            )}
+          />
+        )}
+      </Card>
+    </motion.div>
+  );
+
+  const projectsSection = (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeInUp}
+    >
+        <Card
+          title={
+            <span className="ds-cardTitle">
+              <span className="ds-iconBadge">
+                <FolderOutlined />
+              </span>
+              <span>工程<GradientText>管理</GradientText></span>
+            </span>
+          }
         extra={
         <Space>
           <Button icon={<ReloadOutlined />} onClick={loadProjects} loading={projectsLoading} size="small">
@@ -666,7 +679,7 @@ function App() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </motion.div>
   );
 
   const handleAddPublishPlatform = async (values: PublishPlatformConfig) => {
@@ -716,16 +729,20 @@ function App() {
   };
 
   const publishSection = (
-    <>
-      <Card
-        title={
-          <span className="ds-cardTitle">
-            <span className="ds-iconBadge">
-              <CloudUploadOutlined />
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeInUp}
+    >
+        <Card
+          title={
+            <span className="ds-cardTitle">
+              <span className="ds-iconBadge">
+                <CloudUploadOutlined />
+              </span>
+              <span>发布平台<GradientText>配置</GradientText></span>
             </span>
-            <span>发布平台配置</span>
-          </span>
-        }
+          }
         extra={
           <Space>
             <Button icon={<ReloadOutlined />} onClick={loadPublishPlatforms} loading={publishPlatformsLoading} size="small">
@@ -872,20 +889,25 @@ function App() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </motion.div>
   );
 
   const buildSection = (
-    <Card
-      title={
-        <span className="ds-cardTitle">
-          <span className="ds-iconBadge">
-            <RocketOutlined />
-          </span>
-          <span>构建打包</span>
-        </span>
-      }
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeInUp}
     >
+        <Card
+          title={
+            <span className="ds-cardTitle">
+              <span className="ds-iconBadge">
+                <RocketOutlined />
+              </span>
+              <span>构建<GradientText>打包</GradientText></span>
+            </span>
+          }
+        >
       <Typography.Paragraph type="secondary" style={{ marginBottom: 20 }}>
         选择工程和构建配置，开始Android应用打包流程
       </Typography.Paragraph>
@@ -1271,7 +1293,8 @@ function App() {
           }
         />
       )}
-    </Card>
+        </Card>
+    </motion.div>
   );
 
   const renderContent = () => {

@@ -1,28 +1,28 @@
-/*
-  Flat Design System (Light) — GUI styles
-  目标：彻底移除“玻璃态/阴影/按钮渐变”，改为色块 + 字体层级 + 清晰的交互反馈。
-  约束：保持 Ant Design 组件体系不变，仅通过 Token + 全局覆盖统一风格。
-*/
+/**
+ * Minimalist Modern 设计系统 - 应用级样式
+ * 
+ * 这个文件包含应用特定的样式，包括布局、组件覆盖等。
+ */
 
 /* ========== Layout ========== */
 .layout {
   min-height: 100vh;
   height: 100vh;
-  background: var(--ds-muted);
+  background: var(--background);
   position: relative;
   overflow: hidden;
 }
 
-/* 海报感装饰：大几何形（低不透明度，无 blur） */
+/* 装饰性径向渐变（低不透明度，营造氛围） */
 .layout::before {
   content: "";
   position: absolute;
-  width: 520px;
-  height: 520px;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.08);
-  top: -220px;
-  left: -220px;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 82, 255, 0.08) 0%, transparent 70%);
+  top: -300px;
+  left: -300px;
   pointer-events: none;
   z-index: 0;
 }
@@ -30,25 +30,23 @@
 .layout::after {
   content: "";
   position: absolute;
-  width: 420px;
-  height: 420px;
-  background: rgba(16, 185, 129, 0.08);
-  right: -200px;
-  bottom: -220px;
-  transform: rotate(18deg);
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(77, 124, 255, 0.06) 0%, transparent 70%);
+  right: -250px;
+  bottom: -250px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* 让 Ant Layout 本身透明，真正由 .layout 控制背景 */
 .ant-layout {
   background: transparent !important;
 }
 
-/* ========== Sider ========== */
+/* ========== Sider (侧边栏) ========== */
 .sider {
-  background: var(--ds-muted) !important;
-  border-right: 2px solid var(--ds-border);
+  background: var(--muted) !important;
+  border-right: 1px solid var(--border);
   box-shadow: none !important;
   height: 100vh !important;
   overflow: hidden;
@@ -60,12 +58,15 @@
   height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  font-weight: 800;
-  font-size: 18px;
-  color: #ffffff;
-  background: var(--ds-primary);
+  padding: 0 24px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--accent-foreground);
+  background: linear-gradient(to right, var(--accent), var(--accent-secondary));
   letter-spacing: -0.02em;
+  position: relative;
+  z-index: 2;
 }
 
 .sider-menu {
@@ -74,52 +75,52 @@
   overflow-x: hidden;
   border: none !important;
   background: transparent !important;
-  padding: 12px 8px;
+  padding: 16px 12px;
 }
 
 .sider-menu .ant-menu-item {
-  margin: 6px 8px !important;
-  border-radius: var(--ds-radius-lg) !important;
+  margin: 8px 0 !important;
+  border-radius: var(--radius-lg) !important;
   height: 48px !important;
   line-height: 48px !important;
-  font-weight: 600;
-  color: var(--ds-fg);
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    color var(--ds-fast) var(--ds-ease);
+  font-weight: 500;
+  color: var(--foreground);
+  transition: var(--transition-default);
 }
 
 .sider-menu .ant-menu-item .anticon {
   font-size: 18px;
+  margin-right: 12px;
 }
 
 .sider-menu .ant-menu-item:hover {
-  background: #e5e7eb !important;
-  transform: translateX(2px);
+  background: var(--muted) !important;
+  transform: translateX(4px);
 }
 
 .sider-menu .ant-menu-item-selected {
-  background: var(--ds-primary) !important;
-  color: #ffffff !important;
+  background: linear-gradient(to right, var(--accent), var(--accent-secondary)) !important;
+  color: var(--accent-foreground) !important;
+  box-shadow: var(--shadow-accent);
 }
 
 .sider-menu .ant-menu-item-selected:hover {
-  background: #2563eb !important;
-  transform: translateX(2px);
+  background: linear-gradient(to right, var(--accent-secondary), var(--accent)) !important;
+  transform: translateX(4px);
 }
 
 .sider-menu .ant-menu-item-selected .anticon {
-  color: #ffffff !important;
+  color: var(--accent-foreground) !important;
 }
 
-/* ========== Header / Content ========== */
+/* ========== Header ========== */
 .header {
   display: flex;
   align-items: center;
-  padding: 0 24px !important;
-  background: var(--ds-bg) !important;
-  border-bottom: 2px solid var(--ds-border);
-  box-shadow: none !important;
+  padding: 0 32px !important;
+  background: var(--card) !important;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   height: 64px;
   line-height: 64px;
   position: relative;
@@ -127,63 +128,68 @@
 }
 
 .header-title {
-  color: var(--ds-fg) !important;
-  font-size: 20px !important;
-  font-weight: 800 !important;
+  color: var(--foreground) !important;
+  font-family: var(--font-display);
+  font-size: 24px !important;
+  font-weight: 400 !important;
   letter-spacing: -0.02em;
   margin: 0 !important;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ds-headerIcon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: var(--ds-muted);
-  color: var(--ds-primary);
+  border-radius: var(--radius-full);
+  background: linear-gradient(to right, var(--accent), var(--accent-secondary));
+  color: var(--accent-foreground);
+  box-shadow: var(--shadow-accent);
 }
 
+/* ========== Content ========== */
 .content {
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
   max-height: calc(100vh - 64px);
   position: relative;
   z-index: 1;
 }
 
-/* ========== Card（Color Block） ========== */
+/* ========== Card 覆盖 ========== */
 .ant-card {
-  border-radius: var(--ds-radius-lg) !important;
-  box-shadow: none !important;
-  border: 0 !important;
-  background: var(--ds-bg) !important;
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease);
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--card) !important;
+  transition: var(--transition-default);
+  overflow: hidden;
 }
 
 .ant-card:hover {
-  transform: scale(1.01);
+  box-shadow: var(--shadow-xl) !important;
+  transform: translateY(-2px);
 }
 
 .ant-card-head {
-  border-bottom: 0 !important;
-  padding: 20px 24px !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 24px 32px !important;
   background: transparent !important;
 }
 
 .ant-card-body {
-  padding: 24px !important;
+  padding: 32px !important;
 }
 
 .ant-card-head-title {
-  font-weight: 800;
-  font-size: 18px;
-  color: var(--ds-fg);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--foreground);
 }
 
 .ds-cardTitle {
@@ -193,30 +199,31 @@
 }
 
 .ds-iconBadge {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: var(--ds-bg);
-  border: 2px solid var(--ds-border);
-  color: var(--ds-primary);
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(to right, var(--accent), var(--accent-secondary));
+  color: var(--accent-foreground);
+  box-shadow: var(--shadow-accent);
+  transition: var(--transition-default);
 }
 
-/* ========== Button（No shadow, strong hover） ========== */
+.ds-iconBadge:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+/* ========== Button 覆盖 ========== */
 .ant-btn {
-  border-radius: var(--ds-radius-md) !important;
-  font-weight: 600;
+  border-radius: var(--radius-lg) !important;
+  font-weight: 500;
+  font-family: var(--font-ui);
   box-shadow: none !important;
   border: 0 !important;
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease);
+  transition: var(--transition-default);
 }
 
 .ant-btn:active {
@@ -225,90 +232,96 @@
 
 .ant-btn-lg {
   height: 56px !important;
-  padding: 0 20px !important;
+  padding: 0 24px !important;
   font-size: 16px !important;
 }
 
 .ant-btn-sm {
   height: 40px !important;
-  padding: 0 14px !important;
+  padding: 0 16px !important;
   font-size: 14px !important;
 }
 
 .ant-btn-primary {
-  background: var(--ds-primary) !important;
-  color: #ffffff !important;
+  background: linear-gradient(to right, var(--accent), var(--accent-secondary)) !important;
+  color: var(--accent-foreground) !important;
+  box-shadow: var(--shadow-sm);
 }
 
 .ant-btn-primary:hover {
-  background: #2563eb !important;
-  transform: scale(1.03);
+  box-shadow: var(--shadow-accent) !important;
+  transform: translateY(-2px);
+  filter: brightness(1.1);
 }
 
 .ant-btn-default {
-  background: var(--ds-muted) !important;
-  color: var(--ds-fg) !important;
+  background: var(--muted) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
 }
 
 .ant-btn-default:hover {
-  background: #e5e7eb !important;
-  transform: scale(1.03);
+  background: var(--card) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-2px);
 }
 
-/* ========== Input / Select（Gray bg → White + hard border on focus） ========== */
+/* ========== Input / Select 覆盖 ========== */
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select-selector {
-  border-radius: var(--ds-radius-md) !important;
-  background: var(--ds-muted) !important;
-  border: 2px solid transparent !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--muted) !important;
+  border: 1px solid var(--border) !important;
   box-shadow: none !important;
-  transition: background-color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease),
-    transform var(--ds-fast) var(--ds-ease);
+  transition: var(--transition-default);
+  font-family: var(--font-ui);
 }
 
 .ant-input:hover,
 .ant-input-affix-wrapper:hover,
 .ant-select:hover .ant-select-selector {
-  border-color: var(--ds-border) !important;
+  border-color: var(--accent) !important;
+  background: var(--card) !important;
 }
 
 .ant-input:focus,
 .ant-input-affix-wrapper-focused,
 .ant-select-focused .ant-select-selector {
-  background: var(--ds-bg) !important;
-  border-color: var(--ds-primary) !important;
+  background: var(--card) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1) !important;
 }
 
-/* 清理 AntD 默认 focus 光晕（Flat 体系只用硬边框 + outline） */
-.ant-input:focus {
-  box-shadow: none !important;
+.ant-input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.5;
 }
 
-/* ========== List（结构用粗边/色块，而非阴影） ========== */
+/* ========== List 覆盖 ========== */
 .ant-list-item {
-  padding: 16px !important;
-  border-radius: var(--ds-radius-lg);
-  margin-bottom: 10px;
-  background: var(--ds-bg);
-  border: 2px solid var(--ds-border) !important;
-  transition: transform var(--ds-fast) var(--ds-ease),
-    background-color var(--ds-fast) var(--ds-ease),
-    border-color var(--ds-fast) var(--ds-ease);
+  padding: 20px !important;
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  background: var(--card);
+  border: 1px solid var(--border) !important;
+  transition: var(--transition-default);
 }
 
 .ant-list-item:hover {
-  transform: scale(1.01);
-  border-color: rgba(59, 130, 246, 0.35) !important;
+  transform: translateY(-2px);
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-md);
 }
 
-/* ========== Tag（允许 pill） ========== */
+/* ========== Tag 覆盖 ========== */
 .ant-tag {
   border: 0 !important;
-  border-radius: 999px;
-  font-weight: 700;
-  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  font-family: var(--font-ui);
+  padding: 4px 12px;
+  font-size: 12px;
 }
 
 .ds-tag--ok {
@@ -322,26 +335,21 @@
 }
 
 .ds-tag--primary {
-  background: rgba(59, 130, 246, 0.14) !important;
-  color: #1d4ed8 !important;
+  background: rgba(0, 82, 255, 0.14) !important;
+  color: #1e40af !important;
 }
 
-.ds-tag--accent {
-  background: rgba(245, 158, 11, 0.16) !important;
-  color: #92400e !important;
+.ds-tag--success {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #065f46 !important;
 }
 
-/* ========== Divider（避免细线：用留白） ========== */
-.divider {
-  height: 16px;
-}
-
-/* ========== Alert（日志输出） ========== */
+/* ========== Alert 覆盖 ========== */
 .ant-alert {
-  border-radius: var(--ds-radius-lg) !important;
-  border: 2px solid var(--ds-border) !important;
-  background: var(--ds-bg) !important;
-  box-shadow: none !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--card) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .ant-alert-success {
@@ -354,31 +362,92 @@
   background: rgba(239, 68, 68, 0.08) !important;
 }
 
+.ant-alert-info {
+  border-color: rgba(0, 82, 255, 0.35) !important;
+  background: rgba(0, 82, 255, 0.08) !important;
+}
+
 .ds-logOutput {
   margin: 0;
   white-space: pre-wrap;
   max-height: 400px;
   overflow: auto;
   font-size: 13px;
-  line-height: 1.5;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+  background: var(--muted);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
 }
 
-/* ========== Scrollbar（简洁、无渐变） ========== */
-.content::-webkit-scrollbar {
-  width: 10px;
+/* ========== Modal 覆盖 ========== */
+.ant-modal {
+  border-radius: var(--radius-xl) !important;
 }
 
-.content::-webkit-scrollbar-track {
-  background: transparent;
+.ant-modal-content {
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
 }
 
-.content::-webkit-scrollbar-thumb {
-  background: rgba(17, 24, 39, 0.18);
-  border-radius: 999px;
+.ant-modal-header {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 24px 32px !important;
 }
 
-.content::-webkit-scrollbar-thumb:hover {
-  background: rgba(17, 24, 39, 0.28);
+.ant-modal-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--foreground);
+}
+
+.ant-modal-body {
+  padding: 32px !important;
+}
+
+/* ========== Form 覆盖 ========== */
+.ant-form-item-label > label {
+  font-weight: 500;
+  font-family: var(--font-ui);
+  color: var(--foreground);
+}
+
+/* ========== Typography 覆盖 ========== */
+.ant-typography {
+  font-family: var(--font-ui);
+  color: var(--foreground);
+}
+
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3,
+.ant-typography h4,
+.ant-typography h5,
+.ant-typography h6 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* ========== Collapse 覆盖 ========== */
+.ant-collapse {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.ant-collapse-item {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.ant-collapse-header {
+  padding: 16px 24px !important;
+  font-weight: 600;
+  font-family: var(--font-ui);
+}
+
+.ant-collapse-content-box {
+  padding: 16px 24px !important;
 }
