@@ -39,7 +39,8 @@ import {
   DeleteOutlined,
   MinusCircleOutlined,
   CloudUploadOutlined,
-  EditOutlined
+  EditOutlined,
+  FolderOpenOutlined
 } from "@ant-design/icons";
 import { GradientText } from "./components/ui/GradientText";
 import { SectionLabel } from "./components/ui/SectionLabel";
@@ -124,6 +125,38 @@ function App() {
   const [publishPlatformModalOpen, setPublishPlatformModalOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<PublishPlatformConfig | null>(null);
   const [addingPlatform, setAddingPlatform] = useState(false);
+
+  // 从构建输出中提取输出目录路径
+  const extractOutputDir = (output: string): string | null => {
+    // 查找 "输出目录: " 后面的路径
+    const lines = output.split('\n');
+    for (const line of lines) {
+      if (line.includes('输出目录:')) {
+        const match = line.match(/输出目录:\s*(.+)/);
+        if (match && match[1]) {
+          return match[1].trim();
+        }
+      }
+    }
+    return null;
+  };
+
+  // 打开输出目录
+  const handleOpenOutputDir = async () => {
+    if (!buildResult) return;
+    
+    const outputDir = extractOutputDir(buildResult.output);
+    if (!outputDir) {
+      messageApi.warning("未找到输出目录信息");
+      return;
+    }
+    
+    try {
+      await invoke("open_directory", { path: outputDir });
+    } catch (e) {
+      messageApi.error(`打开目录失败: ${(e as Error).message}`);
+    }
+  };
 
   const loadEnv = async () => {
     setEnvLoading(true);
@@ -1210,9 +1243,25 @@ function App() {
             {
               key: 'build-log',
               label: (
-                <span style={{ fontSize: '15px', fontWeight: 800 }}>
-                  {buildResult.code === 0 ? "✅ 构建成功" : `❌ 构建失败（退出码 ${buildResult.code}）`}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', lineHeight: '1.5' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 800, display: 'inline-flex', alignItems: 'center' }}>
+                    {buildResult.code === 0 ? "✅ 构建成功" : `❌ 构建失败（退出码 ${buildResult.code}）`}
+                  </span>
+                  {buildResult.code === 0 && extractOutputDir(buildResult.output) && (
+                    <Button
+                      type="link"
+                      icon={<FolderOpenOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenOutputDir();
+                      }}
+                      size="small"
+                      style={{ marginLeft: 8, display: 'inline-flex', alignItems: 'center' }}
+                    >
+                      打开输出目录
+                    </Button>
+                  )}
+                </div>
               ),
               children: (
                 <pre className="ds-logOutput" style={{ margin: 0, padding: '12px', backgroundColor: 'var(--ds-bg-layout)', borderRadius: '4px' }}>

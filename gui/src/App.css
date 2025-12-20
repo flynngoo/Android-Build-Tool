@@ -446,6 +446,25 @@
   padding: 16px 24px !important;
   font-weight: 600;
   font-family: var(--font-ui);
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important;
+}
+
+.ant-collapse-header .ant-collapse-arrow {
+  display: flex !important;
+  align-items: center !important;
+  top: auto !important;
+  transform: none !important;
+  margin-top: 0 !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+}
+
+.ant-collapse-header > .ant-collapse-header-text {
+  display: flex !important;
+  align-items: center !important;
+  flex: 1;
 }
 
 .ant-collapse-content-box {

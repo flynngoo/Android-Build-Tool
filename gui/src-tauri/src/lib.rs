@@ -943,6 +943,63 @@ async fn publish_apk(
   }
 }
 
+/// 打开目录（在文件管理器中显示）
+#[tauri::command]
+fn open_directory(path: String) -> Result<(), String> {
+  let dir_path = Path::new(&path);
+  if !dir_path.exists() {
+    return Err(format!("目录不存在: {}", path));
+  }
+  
+  if !dir_path.is_dir() {
+    return Err(format!("路径不是目录: {}", path));
+  }
+  
+  // 在 macOS 上使用 `open` 命令打开目录
+  #[cfg(target_os = "macos")]
+  {
+    let output = StdCommand::new("open")
+      .arg(&path)
+      .output()
+      .map_err(|e| format!("打开目录失败: {}", e))?;
+    
+    if !output.status.success() {
+      let error_msg = String::from_utf8_lossy(&output.stderr);
+      return Err(format!("打开目录失败: {}", error_msg));
+    }
+  }
+  
+  // 在 Windows 上使用 `explorer` 命令
+  #[cfg(target_os = "windows")]
+  {
+    let output = StdCommand::new("explorer")
+      .arg(&path)
+      .output()
+      .map_err(|e| format!("打开目录失败: {}", e))?;
+    
+    if !output.status.success() {
+      let error_msg = String::from_utf8_lossy(&output.stderr);
+      return Err(format!("打开目录失败: {}", error_msg));
+    }
+  }
+  
+  // 在 Linux 上使用 `xdg-open` 命令
+  #[cfg(target_os = "linux")]
+  {
+    let output = StdCommand::new("xdg-open")
+      .arg(&path)
+      .output()
+      .map_err(|e| format!("打开目录失败: {}", e))?;
+    
+    if !output.status.success() {
+      let error_msg = String::from_utf8_lossy(&output.stderr);
+      return Err(format!("打开目录失败: {}", error_msg));
+    }
+  }
+  
+  Ok(())
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -993,7 +1050,8 @@ pub fn run() {
       list_publish_platforms,
       add_publish_platform,
       update_publish_platform,
-      delete_publish_platform
+      delete_publish_platform,
+      open_directory
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
