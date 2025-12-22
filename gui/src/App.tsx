@@ -43,8 +43,7 @@ import {
   FolderOpenOutlined
 } from "@ant-design/icons";
 import { GradientText } from "./components/ui/GradientText";
-import { SectionLabel } from "./components/ui/SectionLabel";
-import { fadeInUp, stagger, viewportOptions } from "./lib/animations";
+import { fadeInUp } from "./lib/animations";
 import "./App.css";
 
 type EnvCheck = { tool: string; ok: boolean; message: string; detail?: string };
