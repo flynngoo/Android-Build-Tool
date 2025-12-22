@@ -51,7 +51,7 @@ type Project = { name: string; path: string; defaultModule?: string; modules?: s
 type ProjectsConfig = { projects: Project[] };
 type BuildResult = { code: number; output: string };
 type PublishResult = { success: boolean; message: string; download_url?: string; qr_code_url?: string; build_key?: string; build_shortcut_url?: string };
-type PublishPlatformConfig = { name: string; platform: string; api_key?: string; api_token?: string; password?: string; default_description?: string };
+type PublishPlatformConfig = { name: string; platform: string; api_key?: string; api_token?: string; password?: string; default_description?: string; go_fir_cli_path?: string };
 type PublishPlatformsConfig = { platforms: PublishPlatformConfig[] };
 
 const statusTag = (ok: boolean) => (
@@ -112,6 +112,7 @@ function App() {
     publishApiToken?: string;
     publishPassword?: string;
     publishDescription?: string;
+    publishGoFirCliPath?: string;
   }>();
   const [buildResult, setBuildResult] = useState<BuildResult | null>(null);
   const [publishResult, setPublishResult] = useState<PublishResult | null>(null);
@@ -356,6 +357,7 @@ function App() {
     publishApiToken?: string;
     publishPassword?: string;
     publishDescription?: string;
+    publishGoFirCliPath?: string;
   }) => {
     setBuilding(true);
     setBuildResult(null);
@@ -373,7 +375,7 @@ function App() {
       // 如果构建成功且配置了发布，则自动发布
       if (res.code === 0 && values.publish) {
         // 如果选择了已保存的配置，从配置中获取信息
-        let publishConfig: { platform: string; api_key?: string; api_token?: string; password?: string; update_description?: string } | null = null;
+        let publishConfig: { platform: string; api_key?: string; api_token?: string; password?: string; update_description?: string; go_fir_cli_path?: string } | null = null;
         
         // 获取更新描述：优先使用用户输入的，否则使用配置的默认值
         const updateDescription = values.publishDescription?.trim() || undefined;
@@ -387,6 +389,7 @@ function App() {
               api_key: selected.api_key,
               api_token: selected.api_token,
               password: selected.password,
+              go_fir_cli_path: selected.go_fir_cli_path,
               // 优先使用用户输入的更新描述，如果没有则使用配置的默认描述
               update_description: updateDescription || selected.default_description,
             };
@@ -398,6 +401,7 @@ function App() {
             api_key: values.publishApiKey,
             api_token: values.publishApiToken,
             password: values.publishPassword,
+            go_fir_cli_path: values.publishGoFirCliPath,
             update_description: updateDescription,
           };
         }
@@ -441,20 +445,43 @@ function App() {
                 api_token: publishConfig.api_token || null,
                 password: publishConfig.password || null,
                 update_description: finalUpdateDesc,
+                go_fir_cli_path: publishConfig.go_fir_cli_path || null,
               },
             });
+            
+            console.log('发布结果:', publishRes);
+            
             setPublishResult(publishRes);
             if (publishRes.success) {
               messageApi.success("发布成功！");
             } else {
+              console.error('发布失败，错误信息:', publishRes.message);
               messageApi.error(`发布失败: ${publishRes.message}`);
             }
           } catch (e) {
-            setPublishResult({
+            // 确保错误信息完整显示
+            let errorMessage = '未知错误';
+            if (e instanceof Error) {
+              errorMessage = e.message || e.toString();
+            } else if (typeof e === 'string') {
+              errorMessage = e;
+            } else if (e && typeof e === 'object' && 'message' in e) {
+              errorMessage = String((e as { message?: unknown }).message || e);
+            } else {
+              errorMessage = String(e);
+            }
+            
+            console.error('发布出错（异常）:', e);
+            console.error('错误信息:', errorMessage);
+            
+            const errorResult: PublishResult = {
               success: false,
-              message: (e as Error).message,
-            });
-            messageApi.error(`发布出错: ${(e as Error).message}`);
+              message: errorMessage,
+            };
+            
+            console.log('设置错误结果:', errorResult);
+            setPublishResult(errorResult);
+            messageApi.error(`发布出错: ${errorMessage}`);
           } finally {
             setPublishing(false);
           }
@@ -892,13 +919,22 @@ function App() {
                 );
               } else if (platform === 'fir') {
                 return (
-                  <Form.Item
-                    name="api_token"
-                    label="fir.im API Token"
-                    rules={[{ required: true, message: "请输入 API Token" }]}
-                  >
-                    <Input.Password placeholder="在 fir.im 平台获取 API Token" />
-                  </Form.Item>
+                  <>
+                    <Form.Item
+                      name="api_token"
+                      label="fir.im API Token"
+                      rules={[{ required: true, message: "请输入 API Token" }]}
+                    >
+                      <Input.Password placeholder="在 fir.im 平台获取 API Token" />
+                    </Form.Item>
+                    <Form.Item
+                      name="go_fir_cli_path"
+                      label="go-fir-cli 安装路径（可选）"
+                      tooltip="如果 which 命令无法找到 go-fir-cli，请在此处填写完整路径，如：/usr/local/bin/go-fir-cli"
+                    >
+                      <Input placeholder="如：/usr/local/bin/go-fir-cli 或 /Users/username/go/bin/go-fir-cli" />
+                    </Form.Item>
+                  </>
                 );
               }
               return null;
@@ -1093,6 +1129,7 @@ function App() {
                                 publishApiKey: selected.api_key,
                                 publishApiToken: selected.api_token,
                                 publishPassword: selected.password,
+                                publishGoFirCliPath: selected.go_fir_cli_path,
                                 publishDescription: selected.default_description,
                               });
                             }
@@ -1103,6 +1140,7 @@ function App() {
                               publishApiKey: undefined,
                               publishApiToken: undefined,
                               publishPassword: undefined,
+                              publishGoFirCliPath: undefined,
                               publishDescription: undefined,
                             });
                           }
@@ -1185,17 +1223,30 @@ function App() {
                               );
                             } else if (platform === 'fir') {
                               return (
-                                <Row gutter={16}>
-                                  <Col span={24}>
-                                    <Form.Item
-                                      name="publishApiToken"
-                                      label="fir.im API Token"
-                                      rules={[{ required: true, message: "请输入 API Token" }]}
-                                    >
-                                      <Input.Password placeholder="在 fir.im 平台获取 API Token" size="large" />
-                                    </Form.Item>
-                                  </Col>
-                                </Row>
+                                <>
+                                  <Row gutter={16}>
+                                    <Col span={24}>
+                                      <Form.Item
+                                        name="publishApiToken"
+                                        label="fir.im API Token"
+                                        rules={[{ required: true, message: "请输入 API Token" }]}
+                                      >
+                                        <Input.Password placeholder="在 fir.im 平台获取 API Token" size="large" />
+                                      </Form.Item>
+                                    </Col>
+                                  </Row>
+                                  <Row gutter={16}>
+                                    <Col span={24}>
+                                      <Form.Item
+                                        name="publishGoFirCliPath"
+                                        label="go-fir-cli 安装路径（可选）"
+                                        tooltip="如果 which 命令无法找到 go-fir-cli，请在此处填写完整路径"
+                                      >
+                                        <Input placeholder="如：/usr/local/bin/go-fir-cli" size="large" />
+                                      </Form.Item>
+                                    </Col>
+                                  </Row>
+                                </>
                               );
                             }
                             return null;
@@ -1295,8 +1346,25 @@ function App() {
             </span>
           }
           description={
-            <div>
-              <Typography.Text>{publishResult.message}</Typography.Text>
+            <div style={{ maxWidth: '100%' }}>
+              <div
+                style={{ 
+                  whiteSpace: 'pre-wrap', 
+                  wordBreak: 'break-word',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  color: publishResult.success ? undefined : '#EF4444',
+                  backgroundColor: publishResult.success ? undefined : 'rgba(239, 68, 68, 0.05)',
+                  padding: publishResult.success ? 0 : '12px',
+                  borderRadius: publishResult.success ? 0 : '8px',
+                  border: publishResult.success ? 'none' : '1px solid rgba(239, 68, 68, 0.2)',
+                  maxHeight: '400px',
+                  overflow: 'auto'
+                }}
+              >
+                {publishResult.message || '未知错误'}
+              </div>
               {publishResult.download_url && (
                 <div style={{ marginTop: 8 }}>
                   <Typography.Text strong>下载链接：</Typography.Text>

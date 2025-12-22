@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- 允许应用执行 shell 命令 -->
+  <key>com.apple.security.automation.apple-events</key>
+  <true/>
+  
+  <!-- 允许应用访问网络（用于上传到 fir.im） -->
+  <key>com.apple.security.network.client</key>
+  <true/>
+  
+  <!-- 允许应用访问文件系统 -->
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+  
+  <!-- 允许应用访问下载目录 -->
+  <key>com.apple.security.files.downloads.read-write</key>
+  <true/>
+</dict>
+</plist>

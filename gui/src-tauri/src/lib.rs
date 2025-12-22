@@ -401,6 +401,7 @@ struct PublishConfig {
   api_token: Option<String>, // fir 使用
   password: Option<String>, // pgyer 可选密码
   update_description: Option<String>, // 更新描述
+  go_fir_cli_path: Option<String>, // fir 平台专用：go-fir-cli 安装路径
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -411,6 +412,7 @@ struct PublishPlatformConfig {
   api_token: Option<String>, // fir 使用
   password: Option<String>, // pgyer 可选密码
   default_description: Option<String>, // 默认更新描述
+  go_fir_cli_path: Option<String>, // fir 平台专用：go-fir-cli 安装路径
 }
 
 #[derive(Serialize, Deserialize)]
@@ -775,32 +777,151 @@ async fn upload_to_pgyer(file_path: &Path, config: &PublishConfig) -> Result<Pub
 
 /// 尝试使用 go-fir-cli 命令行工具上传（备选方案）
 async fn upload_to_fir_via_cli(file_path: &Path, config: &PublishConfig) -> Result<PublishResult, String> {
-  log::info!("尝试使用 go-fir-cli 命令行工具上传");
+  log::warn!("尝试使用 go-fir-cli 命令行工具上传");
+  
+  // 检查文件是否存在
+  if !file_path.exists() {
+    let err = format!("文件不存在: {:?}", file_path);
+    log::error!("{}", err);
+    return Err(err);
+  }
   
   // 查找 go-fir-cli 工具
-  let cli_names = ["go-fir-cli", "fir-cli"];
+  let cli_names = ["go-fir-cli"];
   let mut cli_path: Option<String> = None;
+  let mut search_errors = Vec::new();
   
+  log::warn!("查找 go-fir-cli 工具...");
+  
+  // 方法1: 使用 which 命令查找（可能在沙箱环境中失败）
   for name in &cli_names {
+    log::warn!("使用 which 命令查找: {}", name);
     let (ok, output) = run_command("which", &[name]);
+    log::warn!("which 查找结果 - 成功: {}, 输出: '{}'", ok, output);
+    
     if ok && !output.is_empty() {
-      cli_path = Some(output.trim().to_string());
-      log::info!("找到 go-fir-cli: {}", cli_path.as_ref().unwrap());
-      break;
+      let trimmed = output.trim().to_string();
+      // 验证路径是否有效
+      if Path::new(&trimmed).exists() {
+        cli_path = Some(trimmed);
+        log::warn!("找到 go-fir-cli: {}", cli_path.as_ref().unwrap());
+        break;
+      } else {
+        search_errors.push(format!("which 找到路径但文件不存在: {}", trimmed));
+        log::warn!("路径存在但文件不存在: {}", trimmed);
+      }
+    } else {
+      search_errors.push(format!("which 未找到 {}: {}", name, output));
+      log::warn!("which 未找到 {}: {}", name, output);
     }
   }
   
+  // 如果 which 命令失败，尝试从配置中读取路径
+  log::warn!("方法1完成，cli_path: {:?}", cli_path);
+  if cli_path.is_none() {
+    log::warn!("方法1未找到 go-fir-cli，开始方法2：从配置中读取路径");
+    log::warn!("配置中的 go_fir_cli_path: {:?}", config.go_fir_cli_path);
+    
+    if let Some(ref configured_path) = config.go_fir_cli_path {
+      log::warn!("配置中有路径，尝试使用: {}", configured_path);
+      let trimmed_path = configured_path.trim();
+      log::warn!("去除空格后的路径: '{}'", trimmed_path);
+      
+      if !trimmed_path.is_empty() {
+        log::warn!("路径不为空，检查文件是否存在...");
+        let path = Path::new(trimmed_path);
+        log::warn!("Path对象: {:?}", path);
+        
+        if path.exists() {
+          cli_path = Some(trimmed_path.to_string());
+          log::warn!("✅ 使用配置中的路径找到 go-fir-cli: {}", trimmed_path);
+        } else {
+          search_errors.push(format!("配置的路径不存在: {}", trimmed_path));
+          log::error!("❌ 配置的路径不存在: {}", trimmed_path);
+        }
+      } else {
+        log::warn!("配置的路径为空字符串");
+        search_errors.push("配置的路径为空字符串".to_string());
+      }
+    } else {
+      log::warn!("配置中没有 go_fir_cli_path");
+      search_errors.push("配置中没有设置 go-fir-cli 路径".to_string());
+    }
+  } else {
+    log::warn!("方法1已找到 go-fir-cli，跳过方法2");
+  }
+  
+  log::warn!("方法2完成，最终 cli_path: {:?}", cli_path);
+  
   let cli = cli_path.ok_or_else(|| {
-    let err = "未找到 go-fir-cli 工具，请先安装：https://github.com/PGYER/go-fir-cli/releases".to_string();
-    log::error!("{}", err);
-    err
+    let mut err_msg = "未找到 go-fir-cli 工具\n\n".to_string();
+    err_msg.push_str("解决方法：\n");
+    err_msg.push_str("1. 在发布配置中设置 go-fir-cli 安装路径（推荐）\n");
+    err_msg.push_str("   - 进入\"发布配置\"页面\n");
+    err_msg.push_str("   - 编辑或创建 fir.im 配置\n");
+    err_msg.push_str("   - 在\"go-fir-cli 安装路径\"字段中填写完整路径\n");
+    err_msg.push_str("   - 例如：/usr/local/bin/go-fir-cli 或 /Users/username/go/bin/go-fir-cli\n\n");
+    err_msg.push_str("2. 或者安装 go-fir-cli 到 PATH 中：\n");
+    err_msg.push_str("   - 访问 https://github.com/PGYER/go-fir-cli/releases\n");
+    err_msg.push_str("   - 下载对应平台的二进制文件\n");
+    err_msg.push_str("   - 将文件放到 PATH 环境变量中的目录（如 /usr/local/bin）\n");
+    err_msg.push_str("   - 确保文件有执行权限：chmod +x /usr/local/bin/go-fir-cli\n\n");
+    
+    if !search_errors.is_empty() {
+      err_msg.push_str("查找详情：\n");
+      for (i, err) in search_errors.iter().enumerate() {
+        err_msg.push_str(&format!("  {}. {}\n", i + 1, err));
+      }
+    }
+    
+    log::error!("{}", err_msg);
+    err_msg
   })?;
+  
+  // 检查并修复执行权限
+  let cli_path_obj = Path::new(&cli);
+  log::warn!("检查 go-fir-cli 执行权限: {}", cli);
+  
+  // 检查文件元数据
+  if let Ok(metadata) = fs::metadata(cli_path_obj) {
+    #[cfg(unix)]
+    {
+      use std::os::unix::fs::PermissionsExt;
+      let permissions = metadata.permissions();
+      let mode = permissions.mode();
+      let is_executable = (mode & 0o111) != 0; // 检查是否有执行权限
+      
+      log::warn!("文件权限模式: {:o}, 可执行: {}", mode, is_executable);
+      
+      if !is_executable {
+        log::warn!("文件没有执行权限，尝试添加执行权限...");
+        // 尝试使用 chmod 命令添加执行权限
+        let (chmod_ok, chmod_output) = run_command("chmod", &["+x", &cli]);
+        if chmod_ok {
+          log::warn!("成功添加执行权限");
+        } else {
+          log::error!("无法添加执行权限: {}", chmod_output);
+          let err_msg = format!(
+            "go-fir-cli 文件没有执行权限，且无法自动修复\n\n\
+            文件路径: {}\n\
+            错误: {}\n\n\
+            请手动执行以下命令添加执行权限：\n\
+            chmod +x {}\n",
+            cli, chmod_output, cli
+          );
+          return Err(err_msg);
+        }
+      }
+    }
+  } else {
+    log::warn!("无法获取文件元数据，继续尝试执行");
+  }
   
   // 构建命令：go-fir-cli -t TOKEN upload -f FILE_PATH [-c CHANGELOG]
   let file_path_str = file_path.to_string_lossy().to_string();
   let token = config.api_token.as_ref().unwrap();
   
-  log::info!("执行命令: {} -t {}... upload -f {}", cli, &token[..token.len().min(10)], file_path_str);
+  log::warn!("执行命令: {} -t {}... upload -f {}", cli, &token[..token.len().min(10)], file_path_str);
   
   let mut cmd = Command::new(&cli);
   cmd.arg("-t").arg(token).arg("upload").arg("-f").arg(&file_path_str);
@@ -808,24 +929,40 @@ async fn upload_to_fir_via_cli(file_path: &Path, config: &PublishConfig) -> Resu
   // 如果有更新描述，添加 -c 参数
   if let Some(ref desc) = config.update_description {
     if !desc.trim().is_empty() {
-      log::info!("添加更新描述: {}", desc.trim());
+      log::warn!("添加更新描述: {}", desc.trim());
       cmd.arg("-c").arg(desc.trim());
     }
   }
   
+  log::warn!("开始执行 go-fir-cli 命令...");
   let output = cmd
     .output()
     .await
     .map_err(|e| {
-      let err = format!("执行 go-fir-cli 失败: {}", e);
+      let err_str = e.to_string();
+      let mut err = format!("执行 go-fir-cli 失败: {}\n\n", err_str);
+      
+      // 检查是否是权限问题
+      if err_str.contains("Permission denied") || err_str.contains("permission") {
+        err.push_str("这可能是权限问题。请尝试以下方法：\n");
+        err.push_str(&format!("1. 手动添加执行权限：chmod +x {}\n", cli));
+        err.push_str("2. 或者使用 sudo 运行应用（不推荐）\n");
+        err.push_str("3. 检查文件所有者是否正确\n\n");
+      }
+      
+      err.push_str(&format!("文件路径: {}\n", cli));
+      err.push_str("请确保 go-fir-cli 已正确安装并在 PATH 中，且有执行权限");
+      
       log::error!("{}", err);
       err
     })?;
   
   let stdout = String::from_utf8_lossy(&output.stdout);
   let stderr = String::from_utf8_lossy(&output.stderr);
+  let exit_code = output.status.code().unwrap_or(-1);
   
-  log::info!("go-fir-cli 输出: {}", stdout);
+  log::warn!("go-fir-cli 退出码: {}", exit_code);
+  log::warn!("go-fir-cli 标准输出: {}", stdout);
   if !stderr.is_empty() {
     log::warn!("go-fir-cli 错误输出: {}", stderr);
   }
@@ -896,30 +1033,47 @@ async fn upload_to_fir_via_cli(file_path: &Path, config: &PublishConfig) -> Resu
       }
     }
     
+    log::warn!("go-fir-cli 上传成功");
     Ok(PublishResult {
       success: true,
-      message: format!("上传成功（通过 go-fir-cli）"),
+      message: format!("fir.im 上传成功"),
       download_url,
       qr_code_url: None,
       build_key: None,
       build_shortcut_url: download_page_url,
     })
   } else {
-    Err(format!("go-fir-cli 上传失败: {}\n{}", stdout, stderr))
+    let error_msg = format!(
+      "go-fir-cli 上传失败（退出码: {}）\n标准输出: {}\n错误输出: {}",
+      exit_code, stdout, stderr
+    );
+    log::error!("{}", error_msg);
+    Err(error_msg)
   }
 }
 
 /// 上传到 fir.im（使用 go-fir-cli 命令行工具）
 async fn upload_to_fir(file_path: &Path, config: &PublishConfig) -> Result<PublishResult, String> {
   if config.api_token.is_none() {
-    return Err("fir.im API Token 未配置".to_string());
+    let err = "fir.im API Token 未配置".to_string();
+    log::error!("{}", err);
+    return Err(err);
   }
 
-  log::info!("开始上传到 fir.im（使用 go-fir-cli 工具），文件: {:?}", file_path);
-  log::info!("API Token: {}...", &config.api_token.as_ref().unwrap()[..config.api_token.as_ref().unwrap().len().min(10)]);
+  log::warn!("开始上传到 fir.im（使用 go-fir-cli 工具），文件: {:?}", file_path);
+  log::warn!("API Token: {}...", &config.api_token.as_ref().unwrap()[..config.api_token.as_ref().unwrap().len().min(10)]);
 
   // 直接使用 go-fir-cli 命令行工具上传
-  upload_to_fir_via_cli(file_path, config).await
+  match upload_to_fir_via_cli(file_path, config).await {
+    Ok(result) => {
+      log::warn!("fir.im 上传成功: {}", result.message);
+      Ok(result)
+    }
+    Err(e) => {
+      log::error!("fir.im 上传失败: {}", e);
+      Err(e)
+    }
+  }
 }
 
 #[tauri::command]
@@ -927,19 +1081,59 @@ async fn publish_apk(
   file_path: String,
   config: PublishConfig,
 ) -> Result<PublishResult, String> {
+  log::warn!("开始发布 APK，文件: {}, 平台: {}", file_path, config.platform);
+  
   let path = Path::new(&file_path);
   if !path.exists() {
-    return Err(format!("文件不存在: {}", file_path));
+    let err = format!("文件不存在: {}", file_path);
+    log::error!("{}", err);
+    return Err(err);
   }
 
   if !file_path.ends_with(".apk") && !file_path.ends_with(".aab") {
-    return Err("不支持的文件类型，仅支持 .apk 或 .aab 文件".to_string());
+    let err = "不支持的文件类型，仅支持 .apk 或 .aab 文件".to_string();
+    log::error!("{}", err);
+    return Err(err);
   }
 
-  match config.platform.as_str() {
-    "pgyer" => upload_to_pgyer(path, &config).await,
-    "fir" => upload_to_fir(path, &config).await,
-    _ => Err(format!("不支持的发布平台: {}", config.platform)),
+  let result = match config.platform.as_str() {
+    "pgyer" => {
+      log::warn!("使用蒲公英平台发布");
+      upload_to_pgyer(path, &config).await
+    }
+    "fir" => {
+      log::warn!("使用 fir.im 平台发布");
+      upload_to_fir(path, &config).await
+    }
+    _ => {
+      let err = format!("不支持的发布平台: {}", config.platform);
+      log::error!("{}", err);
+      return Err(err);
+    }
+  };
+  
+  // 将 Err 转换为 PublishResult，确保前端能显示错误信息
+  match result {
+    Ok(r) => {
+      if r.success {
+        log::warn!("发布成功: {}", r.message);
+      } else {
+        log::error!("发布失败: {}", r.message);
+      }
+      Ok(r)
+    }
+    Err(e) => {
+      log::error!("发布过程出错: {}", e);
+      // 将错误转换为 PublishResult，这样前端就能正常显示了
+      Ok(PublishResult {
+        success: false,
+        message: e,
+        download_url: None,
+        qr_code_url: None,
+        build_key: None,
+        build_shortcut_url: None,
+      })
+    }
   }
 }
 
@@ -1007,13 +1201,19 @@ pub fn run() {
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_shell::init())
     .setup(|app| {
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
-      }
+      // 在生产模式和开发模式都启用日志，方便排查问题
+      // 开发模式：Info 级别，生产模式：Warn 级别（减少日志量，但保留错误信息）
+      let log_level = if cfg!(debug_assertions) {
+        log::LevelFilter::Info
+      } else {
+        log::LevelFilter::Warn
+      };
+      
+      app.handle().plugin(
+        tauri_plugin_log::Builder::default()
+          .level(log_level)
+          .build(),
+      )?;
       
       // 设置窗口大小为屏幕的 2/3
       if let Some(window) = app.get_webview_window("main") {
