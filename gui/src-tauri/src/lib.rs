@@ -229,6 +229,7 @@ async fn build_project(
   };
   
   // 输出目录：优先使用传入的 output_dir，否则使用 path+module+variant/buildType
+  let build_type_lower = build_type.to_lowercase();
   let output_dir = if let Some(ref custom_dir) = output_dir {
     Path::new(custom_dir).to_path_buf()
   } else {
@@ -240,10 +241,10 @@ async fn build_project(
     match &variant {
       Some(v) => {
         dir = dir.join(v);
-        dir = dir.join(&build_type);
+        dir = dir.join(&build_type_lower);
       }
       None => {
-        dir = dir.join(&build_type);
+        dir = dir.join(&build_type_lower);
       }
     }
     dir
@@ -288,7 +289,7 @@ async fn build_project(
     };
     
     output_text.push_str(&format!("查找路径: {}\n", module_path.to_string_lossy()));
-    let artifacts = find_build_artifacts(&module_path);
+    let artifacts = find_build_artifacts(&module_path, variant.as_ref(), &build_type);
     output_text.push_str(&format!("找到 {} 个构建产物\n", artifacts.len()));
     
     if !artifacts.is_empty() {
@@ -359,13 +360,25 @@ fn clean_directory(dir: &Path, output_text: &mut String) {
 }
 
 /// 查找构建产物（APK/AAB）
-fn find_build_artifacts(module_path: &Path) -> Vec<PathBuf> {
+fn find_build_artifacts(module_path: &Path, variant: Option<&String>, build_type: &String) -> Vec<PathBuf> {
   let mut artifacts = Vec::new();
   
-  // APK 文件路径
-  let apk_path = module_path.join("build/outputs/apk");
-  // AAB 文件路径
-  let bundle_path = module_path.join("build/outputs/bundle");
+  // 构建 APK 和 AAB 的基础路径
+  // Android 构建产物路径结构：build/outputs/apk/variant/buildType 或 build/outputs/apk/buildType
+  let mut apk_path = module_path.join("build/outputs/apk");
+  let mut bundle_path = module_path.join("build/outputs/bundle");
+  
+  // 如果有 variant，添加 variant/buildType 子路径
+  // buildType 需要转换为小写，因为 Android Gradle 构建路径中 buildType 通常是全小写
+  let build_type_lower = build_type.to_lowercase();
+  if let Some(v) = variant {
+    apk_path = apk_path.join(v).join(&build_type_lower);
+    bundle_path = bundle_path.join(v).join(&build_type_lower);
+  } else {
+    // 没有 variant 时，直接使用 buildType（小写）
+    apk_path = apk_path.join(&build_type_lower);
+    bundle_path = bundle_path.join(&build_type_lower);
+  }
   
   // 查找所有 APK 文件
   if apk_path.exists() {
